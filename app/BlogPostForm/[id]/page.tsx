@@ -3,8 +3,15 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
-import { baseURL } from "@/config/baseUrl";
-
+import { baseURL } from "@/config/baseUrl"; 
+import {
+  Calendar, // For date
+  Image as ImageIcon, // For image section
+  Video, // For video section
+  Loader2, // For loading spinner
+  Info, // For error/no data info
+  X, // For error icon
+} from "lucide-react"; // Import icons
 
 interface BlogPost {
   id: number;
@@ -18,7 +25,7 @@ interface BlogPost {
 const linkify = (text: string) => {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   return text.split("\n").map((line, i) => (
-    <p key={i} className="mb-3 text-gray-800">
+    <p key={i} className="mb-3 text-gray-800 leading-relaxed">
       {line.split(urlRegex).map((part, index) =>
         urlRegex.test(part) ? (
           <a
@@ -26,7 +33,7 @@ const linkify = (text: string) => {
             href={part}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 underline"
+            className="text-blue-600 underline hover:text-blue-800 transition-colors duration-200"
           >
             {part}
           </a>
@@ -41,60 +48,153 @@ const linkify = (text: string) => {
 const BlogDetailsPage = () => {
   const { id } = useParams();
   const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setLoading(false);
+      setError("No blog post ID provided.");
+      return;
+    }
 
+    setLoading(true);
+    setError(null); // Clear previous errors
     axios
-      .get(`${baseURL}/api/posts/${id}`)
+      .get<BlogPost>(`${baseURL}/api/posts/${id}`)
       .then((res) => {
-        setPost(res.data);
+        // Ensure images and videos are arrays, even if null/undefined from API
+        setPost({
+          ...res.data,
+          images: res.data.images || [],
+          videos: res.data.videos || [],
+        });
       })
-      .catch((err) => console.error("❌ Error loading post:", err));
-  }, [id]);
+      .catch((err) => {
+        console.error("❌ Error loading post:", err);
+        setError("Failed to load blog post. Please try again.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [id, baseURL]); // Added baseURL to dependency array
 
-  if (!post) return <p className="text-center mt-10">Loading blog...</p>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="flex flex-col items-center p-8 bg-white rounded-xl shadow-lg">
+          <Loader2 className="animate-spin w-12 h-12 text-blue-500 mb-4" />
+          <p className="text-lg text-gray-700 font-medium">Loading blog post...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="flex flex-col items-center p-8 bg-white rounded-xl shadow-lg text-red-600">
+          <X className="w-12 h-12 mb-4" />
+          <p className="text-lg font-medium">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="flex flex-col items-center p-8 bg-white rounded-xl shadow-lg text-gray-600">
+          <Info className="w-12 h-12 mb-4" />
+          <p className="text-lg font-medium">Blog post not found.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-full mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-2 text-gray-900">{post.title}</h1>
-      <p className="text-sm text-gray-500 mb-6">
-        {new Date(post.created_at).toLocaleString("en-KE")}
-      </p>
-      {post.images?.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-2">Images</h3>
-          <div className="flex overflow-x-auto gap-4 scrollbar-thin scrollbar-thumb-gray-400">
-            {post.images.map((img, idx) => (
-              <img
-                key={idx}
-                src={img}
-                alt={`Post image ${idx}`}
-                className="h-64 w-auto object-cover rounded shadow-sm flex-shrink-0"
-              />
-            ))}
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
+        {/* Blog Post Header */}
+        <div className="mb-8 pb-4 border-b border-gray-200 text-center">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3 leading-tight">
+            {post.title}
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600 flex items-center justify-center">
+            <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+            Published on: {new Date(post.created_at).toLocaleString("en-KE", { dateStyle: 'medium', timeStyle: 'short' })}
+          </p>
         </div>
-      )}
-      {post.videos?.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-2">Videos</h3>
-          <div className="flex overflow-x-auto gap-4 scrollbar-thin scrollbar-thumb-gray-400">
-            {post.videos.map((vid, idx) => (
-              <video
-                key={idx}
-                src={vid}
-                className="h-64 w-auto object-cover rounded shadow-md flex-shrink-0"
-                controls
-                preload="metadata"
-              />
-            ))}
+
+        {/* Images Section */}
+        {post.images.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <ImageIcon className="w-5 h-5 mr-2 text-blue-600" /> Images
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {post.images.map((img, idx) => (
+                <img
+                  key={idx}
+                  src={img.startsWith('data:') ? img : `${baseURL}/${img}`} // Handle base64 or relative paths
+                  alt={`Post image ${idx}`}
+                  className="w-full h-56 object-cover rounded-lg shadow-md border border-gray-200 transform hover:scale-[1.03] transition-transform duration-200 ease-in-out"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).onerror = null; // Prevent infinite loop
+                    (e.target as HTMLImageElement).src = "https://placehold.co/600x400/E2E8F0/A0AEC0?text=Image+Load+Error"; // Placeholder on error
+                  }}
+                />
+              ))}
+            </div>
           </div>
+        )}
+
+        {/* Videos Section */}
+        {post.videos.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <Video className="w-5 h-5 mr-2 text-red-600" /> Videos
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {post.videos.map((vid, idx) => (
+                <video
+                  key={idx}
+                  src={vid.startsWith('data:') ? vid : `${baseURL}/${vid}`} // Handle base64 or relative paths
+                  className="w-full h-56 object-cover rounded-lg shadow-md border border-gray-200"
+                  controls
+                  preload="metadata"
+                >
+                  Your browser does not support the video tag.
+                </video>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Blog Content */}
+        <div className="prose prose-lg max-w-none text-gray-900 leading-relaxed">
+          {linkify(post.content)}
         </div>
-      )}
-      <div className="prose prose-lg max-w-none text-gray-900">
-        {linkify(post.content)}
       </div>
+
+
+      <style jsx global>{`
+        /* This applies to the whole page if it overflows, not just specific divs */
+        body::-webkit-scrollbar {
+          width: 8px;
+        }
+        body::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 10px;
+        }
+        body::-webkit-scrollbar-thumb {
+          background: #cbd5e0;
+          border-radius: 10px;
+        }
+        body::-webkit-scrollbar-thumb:hover {
+          background: #a0aec0;
+        }
+      `}</style>
     </div>
   );
 };

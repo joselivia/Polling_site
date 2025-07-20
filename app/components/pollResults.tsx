@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import axios from "axios";
 import useSWR from "swr";
 import {
   Tooltip,
@@ -13,10 +12,19 @@ import {
   PieChart,
   XAxis,
   YAxis,
+  Legend, 
 } from "recharts";
 import Link from "next/link";
-import { baseURL } from "@/config/baseUrl";
-
+import { baseURL } from "@/config/baseUrl"; 
+import {
+  BarChart2,
+  PieChart as PieChartIcon,
+  Info,
+  Hand,
+  Clock,
+  Users,
+  X,
+} from "lucide-react"; 
 
 // Interfaces
 interface Candidate {
@@ -43,9 +51,14 @@ const COLORS = [
   "#f59e0b",
   "#ef4444",
   "#3b82f6",
+  "#ca8a04",
+  "#be123c",
+  "#6d28d9",
+  "#16a34a",
 ];
 
-const fetcher = (url: string) => axios.get(url).then((res) => res.data);
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 const PollResults = ({ pollId }: { pollId?: number }) => {
   const { data, error, isLoading } = useSWR<PollData>(
     pollId ? `${baseURL}/api/polls/${pollId}/results` : null,
@@ -53,13 +66,33 @@ const PollResults = ({ pollId }: { pollId?: number }) => {
     { refreshInterval: 5000 }
   );
 
-  if (isLoading) return <p className="text-center p-4">Loading results...</p>;
-  if (error || !data)
+  if (isLoading) {
     return (
-      <p className="text-center p-4 text-red-500">Error loading data.</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="flex flex-col items-center p-8 bg-white rounded-xl shadow-lg">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+          <p className="text-lg text-gray-700 font-medium">
+            Loading poll results...
+          </p>
+        </div>
+      </div>
     );
+  }
 
-  const chartData = data.results.map((candidate: Candidate) => ({
+  if (error || !data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="flex flex-col items-center p-8 bg-white rounded-xl shadow-lg text-red-600">
+          <X className="w-12 h-12 mb-4" />
+          <p className="text-lg font-medium">
+            Error loading poll data. Please try again.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const chartData = (data.results || []).map((candidate: Candidate) => ({
     id: candidate.id,
     name: candidate.name,
     votes: candidate.voteCount,
@@ -67,25 +100,36 @@ const PollResults = ({ pollId }: { pollId?: number }) => {
   }));
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-3xl font-bold text-center mb-4">
-        {data.pollTitle || "Poll Results"}
-      </h1>
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <p className="text-gray-500 text-sm mb-2">Region: {data.region}</p>
-        <p className="text-gray-600 mb-2">
-          Registered Voters: {data.totalVotes.toLocaleString()}
-        </p>
-        <p className="text-gray-600 mb-4">
-          Turnout: {data.totalVotes > 0 ? "100%" : "0%"}
-        </p>
-
-        {/* Charts */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Pie Chart */}
-          <div className="bg-white p-4 rounded shadow">
-            <h2 className="text-lg font-semibold mb-2 text-center">
-              Pie Chart
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
+        {/* Header */}
+        <div className="text-center mb-8 pb-4 border-b border-gray-200">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-3 flex items-center justify-center">
+            <BarChart2 className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" />{" "}
+            {data.pollTitle || "Poll Results"}
+          </h1>
+          <p className="text-gray-600 text-base sm:text-lg font-medium mb-1 flex items-center justify-center">
+            <Info className="w-4 h-4 mr-2 text-gray-500" /> Region:{" "}
+            <span className="font-semibold ml-1">{data.region}</span>
+          </p>
+          <p className="text-gray-600 text-base sm:text-lg font-medium mb-1 flex items-center justify-center">
+            <Users className="w-4 h-4 mr-2 text-gray-500" /> Total Votes:{" "}
+            <span className="font-semibold ml-1">
+              {data.totalVotes.toLocaleString()}
+            </span>
+          </p>
+          <p className="text-gray-600 text-base sm:text-lg font-medium flex items-center justify-center">
+            <Clock className="w-4 h-4 mr-2 text-gray-500" /> Last Updated:{" "}
+            <span className="font-semibold ml-1">
+              {new Date(data.lastUpdated).toLocaleString("en-KE")}
+            </span>
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-gray-50 p-6 rounded-xl shadow-md border border-gray-100 flex flex-col items-center">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <PieChartIcon className="w-5 h-5 mr-2 text-purple-600" /> Vote
+              Distribution
             </h2>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -96,35 +140,67 @@ const PollResults = ({ pollId }: { pollId?: number }) => {
                   cx="50%"
                   cy="50%"
                   outerRadius={100}
-                  label
+                  fill="#8884d8"
+                  label={({ name, percentage }) =>
+                    `${name} (${percentage.toFixed(1)}%)`
+                  }
+                  labelLine={false}
                 >
-                  {chartData.map((entry) => (
+                  {chartData.map((entry, index) => (
                     <Cell
-                      key={`pie-${entry.id}`}
-                      fill={COLORS[entry.id % COLORS.length]}
+                      key={`pie-cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
                     />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  formatter={(value: number, name: string, props: any) => [
+                    `${value.toLocaleString()} votes`,
+                    props.payload.name,
+                  ]}
+                />
+                <Legend
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="middle"
+                  wrapperStyle={{ paddingLeft: "20px" }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
 
-          {/* Bar Chart */}
-          <div className="bg-white p-4 rounded shadow">
-            <h2 className="text-lg font-semibold mb-2 text-center">
-              Bar Chart
+          {/* Bar Chart Card */}
+          <div className="bg-gray-50 p-6 rounded-xl shadow-md border border-gray-100 flex flex-col items-center">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <BarChart2 className="w-5 h-5 mr-2 text-green-600" /> Votes by
+              Candidate
             </h2>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="votes">
-                  {chartData.map((entry) => (
+              <BarChart
+                data={chartData}
+                layout="vertical"
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <XAxis
+                  type="number"
+                  tickFormatter={(value) => value.toLocaleString()}
+                />
+                <Tooltip
+                  formatter={(value: number) =>
+                    `${value.toLocaleString()} votes`
+                  }
+                />
+                <Bar dataKey="votes" barSize={30} radius={[5, 5, 0, 0]}>
+                  {chartData.map((entry, index) => (
                     <Cell
-                      key={`bar-${entry.id}`}
-                      fill={COLORS[entry.id % COLORS.length]}
+                      key={`bar-cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
                     />
                   ))}
                 </Bar>
@@ -133,57 +209,72 @@ const PollResults = ({ pollId }: { pollId?: number }) => {
           </div>
         </div>
 
-        {/* Table */}
-        <table className="w-full mt-6 text-sm">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left py-2">Candidate</th>
-              <th className="text-left py-2">%</th>
-              <th className="text-left py-2">Chart</th>
-              <th className="text-left py-2">Votes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.results.map((candidate: Candidate) => (
-              <tr key={candidate.id} className="border-b">
-                <td className="py-2 font-medium">{candidate.name}</td>
-                <td className="py-2">{candidate.percentage}%</td>
-                <td className="py-2 w-1/4 pr-10">
-                  <div className="h-4 bg-gray-200 rounded">
-                    <div
-                      className="h-4 rounded"
-                      style={{
-                        width: `${candidate.percentage}%`,
-                        backgroundColor:
-                          COLORS[candidate.id % COLORS.length],
-                      }}
-                    />
-                  </div>
-                </td>
-                <td className="py-2">
-                  {candidate.voteCount.toLocaleString()}
-                </td>
+        {/* Results Table */}
+        <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+          Detailed Results
+        </h3>
+        <div className="overflow-x-auto rounded-xl shadow-md border border-gray-200">
+          <table className="min-w-full bg-white text-sm">
+            <thead className="bg-gray-100 border-b border-gray-200">
+              <tr>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700 uppercase tracking-wider rounded-tl-xl">
+                  Candidate
+                </th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700 uppercase tracking-wider">
+                  Percentage (%)
+                </th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700 uppercase tracking-wider">
+                  Progress
+                </th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700 uppercase tracking-wider rounded-tr-xl">
+                  Votes
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {chartData.map((candidate, index) => (
+                <tr
+                  key={candidate.id}
+                  className="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150"
+                >
+                  <td className="py-3 px-4 font-medium text-gray-900">
+                    {candidate.name}
+                  </td>
+                  <td className="py-3 px-4 text-gray-700">
+                    {candidate.percentage.toFixed(2)}%
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500 ease-out"
+                        style={{
+                          width: `${candidate.percentage}%`,
+                          backgroundColor: COLORS[index % COLORS.length],
+                        }}
+                      />
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 text-gray-700">
+                    {candidate.votes.toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-        {/* Footer */}
-        <p className="text-sm text-gray-500 mt-4">
-          Est. Votes Counted: 100% | Last Updated:{" "}
-          {new Date(data.lastUpdated).toLocaleString("en-KE")}
-        </p>
-
-        {/* Buttons */}
-        <div className="flex text-center justify-between">
-          <Link href={`/FullvotesInterface?id=${pollId}`}>
-            <button className="mt-4 bg-red-500 text-white py-2 px-4 rounded-full hover:bg-red-600">
-              Full Details
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+          <Link href={`/FullvotesInterface?id=${pollId}`} passHref>
+            <button className="flex items-center justify-center px-6 py-3 bg-red-600 text-white font-semibold rounded-full shadow-md hover:bg-red-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75">
+              <Info className="w-5 h-5 mr-2" /> Full Details
             </button>
           </Link>
-          <a href={`/vote/${pollId}`}>
-            <button className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-full hover:bg-blue-600">
-              Vote Now
+          <a href={`/vote/${pollId}`} target="_blank" rel="noopener noreferrer">
+            {" "}
+            {/* Open in new tab for voting */}
+            <button className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75">
+              <Hand className="w-5 h-5 mr-2" /> Vote Now
             </button>
           </a>
         </div>

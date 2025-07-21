@@ -117,7 +117,6 @@ const SurveyForm: React.FC<SurveyFormProps> = () => {
         alert("Please fill in all required respondent details and answer all questions.");
         return;
     }
-    // Example of sending data (replace with your actual API call)
 const surveyData = {
  respondent: { gender: respondentGender, age: respondentAge },
       questions: questions.map(q => ({ id: q.id, text: q.text, answer: q.answer, type: q.type })),

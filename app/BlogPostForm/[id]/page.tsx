@@ -5,13 +5,12 @@ import { useParams } from "next/navigation";
 import axios from "axios";
 import { baseURL } from "@/config/baseUrl"; 
 import {
-  Calendar, // For date
-  Image as ImageIcon, // For image section
-  Video, // For video section
-  Loader2, // For loading spinner
-  Info, // For error/no data info
-  X, // For error icon
-} from "lucide-react"; // Import icons
+  Calendar,
+  Image as ImageIcon, 
+  Video, 
+  Loader2, 
+  Info,   X, 
+} from "lucide-react"; 
 
 interface BlogPost {
   id: number;
@@ -21,7 +20,6 @@ interface BlogPost {
   images: string[];
   videos: string[];
 }
-
 const linkify = (text: string) => {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   return text.split("\n").map((line, i) => (
@@ -59,11 +57,10 @@ const BlogDetailsPage = () => {
     }
 
     setLoading(true);
-    setError(null); // Clear previous errors
+    setError(null);
     axios
       .get<BlogPost>(`${baseURL}/api/posts/${id}`)
       .then((res) => {
-        // Ensure images and videos are arrays, even if null/undefined from API
         setPost({
           ...res.data,
           images: res.data.images || [],
@@ -159,7 +156,7 @@ const BlogDetailsPage = () => {
               {post.videos.map((vid, idx) => (
                 <video
                   key={idx}
-                  src={vid.startsWith('data:') ? vid : `${baseURL}/${vid}`} // Handle base64 or relative paths
+                  src={vid.startsWith('data:') ? vid : `${baseURL}/${vid}`} 
                   className="w-full h-56 object-cover rounded-lg shadow-md border border-gray-200"
                   controls
                   preload="metadata"
@@ -176,10 +173,7 @@ const BlogDetailsPage = () => {
           {linkify(post.content)}
         </div>
       </div>
-
-
       <style jsx global>{`
-        /* This applies to the whole page if it overflows, not just specific divs */
         body::-webkit-scrollbar {
           width: 8px;
         }

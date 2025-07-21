@@ -19,42 +19,35 @@ interface MediaContent {
   videos: string[];
 }
 
-// Helper to truncate text
 const truncate = (text: string, limit: number) => {
   return text.length > limit ? text.slice(0, limit) + "..." : text;
 };
-
 const BlogListPage = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  // Ensure useMediaStore provides a default structure or handle its absence gracefully
-  const { mediaMap, setMedia } = useMediaStore() || { mediaMap: {}, setMedia: () => {} }; // Fallback if useMediaStore is undefined
+  const { mediaMap, setMedia } = useMediaStore() || { mediaMap: {}, setMedia: () => {} }; 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchPosts = async () => {
       setLoading(true);
-      setError(""); // Clear previous errors
+      setError("");
       try {
         const res = await axios.get(`${baseURL}/api/posts?limit=10&offset=0`);
         const fetchedPosts = res.data?.posts || [];
         setPosts(fetchedPosts);
-
-        // Fetch media for each post
         for (const post of fetchedPosts) {
-          // Only fetch if media is not already in map
           if (!mediaMap[post.id]) {
             try {
               const mediaRes = await axios.get(`${baseURL}/api/posts/${post.id}`);
               const { images = [], videos = [] } = mediaRes.data as MediaContent;
-              if (setMedia) { // Ensure setMedia exists before calling
+              if (setMedia) { 
                 setMedia(post.id, { images, videos });
               }
             } catch (err) {
               console.error(`❌ Failed to load media for post ${post.id}`, err);
-              // Optionally set a placeholder media state for failed fetches
-              if (setMedia) {
-                setMedia(post.id, { images: [], videos: [] }); // Mark as fetched but empty
+                           if (setMedia) {
+                setMedia(post.id, { images: [], videos: [] }); 
               }
             }
           }
@@ -68,12 +61,11 @@ const BlogListPage = () => {
     };
 
     fetchPosts();
-  }, [mediaMap, setMedia, baseURL]); // Added baseURL to dependency array
+  }, [mediaMap, setMedia, baseURL]); 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
-        {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-8 pb-4 border-b border-gray-200">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 sm:mb-0 flex items-center">
             <FileText className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" /> Latest Blog Posts
@@ -113,11 +105,8 @@ const BlogListPage = () => {
                 return (
                   <div
                     key={post.id}
-                    // Card styling: flex-col on small, flex-row on large
-                    // Max width for each card to prevent them from stretching too wide
-                    className="bg-white flex flex-col lg:flex-row shadow-lg rounded-xl overflow-hidden border border-gray-100 mb-6 w-full max-w-4xl transform hover:scale-[1.02] transition-transform duration-200 ease-in-out"
+                           className="bg-white flex flex-col lg:flex-row shadow-lg rounded-xl overflow-hidden border border-gray-100 mb-6 w-full max-w-4xl transform hover:scale-[1.02] transition-transform duration-200 ease-in-out"
                   >
-                    {/* Media Section - takes full width on small, 1/3 on large */}
                     {media ? (
                       media.images.length > 0 ? (
                         <img
@@ -127,10 +116,9 @@ const BlogListPage = () => {
                               : `${baseURL}/${media.images[0]}`
                           }
                           alt={`Post ${post.id} preview`}
-                          // Responsive width for media, fixed height on small, auto height on large
-                          className="w-full lg:w-1/3 h-48 lg:h-auto object-cover rounded-t-xl lg:rounded-tr-none lg:rounded-bl-xl"
+                                       className="w-full lg:w-1/3 h-48 lg:h-auto object-cover rounded-t-xl lg:rounded-tr-none lg:rounded-bl-xl"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).onerror = null; // Prevent infinite loop
+                            (e.target as HTMLImageElement).onerror = null; 
                             (e.target as HTMLImageElement).src = "https://placehold.co/600x400/E2E8F0/A0AEC0?text=Image+Load+Error"; // Placeholder on error
                           }}
                         />
@@ -139,10 +127,9 @@ const BlogListPage = () => {
                           className="w-full lg:w-1/3 h-48 lg:h-auto object-cover rounded-t-xl lg:rounded-tr-none lg:rounded-bl-xl"
                           controls
                           preload="metadata"
-                        >
-                          <source
+                        >                            <source
                             src={
-                              media.videos[0].startsWith("data:")
+                                                      media.videos[0].startsWith("data:")
                                 ? media.videos[0]
                                 : `${baseURL}/${media.videos[0]}`
                             }
@@ -173,7 +160,7 @@ const BlogListPage = () => {
 
                       {showSeeMore && (
                         <Link
-                          href={`/BlogPostForm/${post.id}`} // Assuming this is the correct link for full post view
+                          href={`/BlogPostForm/${post.id}`} 
                           className="mt-auto inline-flex items-center justify-center self-start px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors duration-200 shadow-md"
                         >
                           Read More <ExternalLink className="w-4 h-4 ml-2" />
@@ -187,7 +174,6 @@ const BlogListPage = () => {
           )}
         </div>
       </div>
-      {/* Custom scrollbar style */}
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;

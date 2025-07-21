@@ -5,8 +5,7 @@ import PollResults from "./components/pollResults";
 import axios from "axios";
 import BlogListPage from "./components/Blogs";
 import { baseURL } from "@/config/baseUrl";
-
-
+import SurveyForm from "./createpoll/survey";
 
 export interface PollSummary {
   id: number;
@@ -34,7 +33,7 @@ export default function Home() {
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="lg:w-1/3 w-full">
           <div className="bg-white shadow-lg rounded-lg p-4">
-           <BlogListPage />
+           <BlogListPage />   <SurveyForm />
           </div>
         </div>
 

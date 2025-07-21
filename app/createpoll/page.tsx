@@ -4,12 +4,14 @@ import React, { useState } from "react";
 import CustomPoll from "../customePoll/custompoll"; 
 import {
   CATEGORY_OPTIONS,
+  countyAssemblyWardMap,
   countyConstituencyMap,
+  Presidential_category,
   regionCountyMap,
 } from "./Places"; 
 import { useRouter } from "next/navigation";
 import { baseURL } from "@/config/baseUrl"; 
-import { Plus, X, Upload, Send, Edit, SquarePen, Megaphone } from "lucide-react"; 
+import { Plus, X, Upload, Send, Edit, SquarePen, Megaphone } from "lucide-react";
 
 interface Competitor {
   name: string;
@@ -19,10 +21,12 @@ interface Competitor {
 
 const CreatePoll = () => {
   const [title, setTitle] = useState("");
+  const [presidential, setPresidential] = useState(""); // Corrected typo: Presidential
   const [category, setCategory] = useState("");
   const [region, setRegion] = useState("");
   const [county, setCounty] = useState("");
   const [constituency, setConstituency] = useState("");
+  const [ward, setWard] = useState("");
   const [competitors, setCompetitors] = useState<Competitor[]>([
     { name: "", party: "", profileFile: null },
   ]);
@@ -33,6 +37,7 @@ const CreatePoll = () => {
 
   const counties = region ? regionCountyMap[region] : [];
   const constituencies = county ? countyConstituencyMap[county] : [];
+  const wards = constituency ? countyAssemblyWardMap[constituency] : [];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = e.target.files ? e.target.files[0] : null;
@@ -45,13 +50,16 @@ const CreatePoll = () => {
     e.preventDefault();
     if (submitting) return;
     setSubmitting(true);
-    setMessage(""); // Clear previous messages
+    setMessage("");
 
-    if (!title || !category || !region || !county || !constituency) {
+    // Validation for poll details
+    if (!title || !presidential || !category || !region || !county || !constituency || !ward) {
       setMessage("❌ Please fill in all required poll details.");
       setSubmitting(false);
       return;
     }
+
+    // Validation for competitor details
     if (competitors.some(comp => !comp.name || !comp.party)) {
       setMessage("❌ Please fill in all competitor details.");
       setSubmitting(false);
@@ -59,12 +67,15 @@ const CreatePoll = () => {
     }
 
     const formData = new FormData();
-
     formData.append("title", title);
+    formData.append("presidential", presidential); // Corrected typo
     formData.append("category", category);
     formData.append("region", region);
     formData.append("county", county);
     formData.append("constituency", constituency);
+    formData.append("ward", ward);
+
+    
     formData.append(
       "competitors",
       JSON.stringify(competitors.map(({ name, party }) => ({ name, party })))
@@ -84,14 +95,18 @@ const CreatePoll = () => {
 
       if (response.ok) {
         setMessage("✅ Poll created successfully! Redirecting...");
+        // Reset all form states on success
         setTitle("");
+        setPresidential(""); // Corrected typo
         setCategory("");
         setRegion("");
         setCounty("");
         setConstituency("");
+        setWard("");
         setCompetitors([{ name: "", party: "", profileFile: null }]);
+
         setTimeout(() => {
-          router.push("/"); // Redirect to homepage or poll list
+          router.push("/");
         }, 1500);
       } else {
         const errorData = await response.json();
@@ -117,7 +132,7 @@ const CreatePoll = () => {
     const newCompetitors = [...competitors];
     newCompetitors.splice(index, 1);
     setCompetitors(newCompetitors);
-    setMessage(""); 
+    setMessage("");
   };
 
   const updateCompetitor = (index: number, field: keyof Competitor, value: string | File | null) => {
@@ -132,8 +147,7 @@ const CreatePoll = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
-        {/* Header Section */}
+      <div className="max-w-8xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 pb-4 border-b border-gray-200">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 sm:mb-0 flex items-center">
             <Megaphone className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" /> Create New Poll
@@ -146,45 +160,65 @@ const CreatePoll = () => {
           </button>
         </div>
 
-        {/* Form Section */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Poll Title */}
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-              Poll Title <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800"
-              placeholder="e.g., Presidential Election Poll"
-              required
-            />
+          {/* Poll Details Section */}
+          <div className="space-y-6">
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                Poll Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800"
+                placeholder="e.g., Presidential Election Poll"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="presidential" className="block text-sm font-medium text-gray-700 mb-2">
+                Presidential Executive <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="presidential"
+                value={presidential}
+                onChange={(e) => setPresidential(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
+                required
+              >
+                <option value="" disabled>Select a category</option>
+                {Presidential_category.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                Category <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
+                required
+              >
+                <option value="" disabled>Select a category</option>
+                {CATEGORY_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {/* Category */}
-          <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-              Category <span className="text-red-500">*</span>
-            </label>
-            <select
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
-              required
-            >
-              <option value="" disabled>Select a category</option>
-              {CATEGORY_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Location Details */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div>
               <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-2">
                 Region <span className="text-red-500">*</span>
@@ -196,6 +230,7 @@ const CreatePoll = () => {
                   setRegion(e.target.value);
                   setCounty("");
                   setConstituency("");
+                  setWard("");
                 }}
                 className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
                 required
@@ -219,6 +254,7 @@ const CreatePoll = () => {
                 onChange={(e) => {
                   setCounty(e.target.value);
                   setConstituency("");
+                  setWard("");
                 }}
                 disabled={!region}
                 className={`w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white ${!region ? 'opacity-60 cursor-not-allowed' : ''}`}
@@ -240,7 +276,7 @@ const CreatePoll = () => {
               <select
                 id="constituency"
                 value={constituency}
-                onChange={(e) => setConstituency(e.target.value)}
+                onChange={(e) => { setConstituency(e.target.value); setWard("") }}
                 disabled={!county}
                 className={`w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white ${!county ? 'opacity-60 cursor-not-allowed' : ''}`}
                 required
@@ -253,10 +289,31 @@ const CreatePoll = () => {
                 ))}
               </select>
             </div>
+
+            <div>
+              <label htmlFor="ward" className="block text-sm font-medium text-gray-700 mb-2">
+                Ward <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="ward"
+                value={ward}
+                onChange={(e) => setWard(e.target.value)}
+                disabled={!constituency}
+                className={`w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white ${!constituency ? 'opacity-60 cursor-not-allowed' : ''}`}
+                required
+              >
+                <option value="" disabled>Select Ward</option>
+                {wards.map((ward) => (
+                  <option key={ward} value={ward}>
+                    {ward}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {/* Competitors Section */}
-          <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">Competitors</h3>
+             {/* Competitors Section */}
+          <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">Aspirant</h3>
           <div className="space-y-4">
             {competitors.map((comp, index) => (
               <div key={index} className="relative p-5 border border-gray-200 rounded-xl shadow-sm bg-gray-50">
@@ -270,7 +327,7 @@ const CreatePoll = () => {
                     <X className="w-5 h-5" />
                   </button>
                 )}
-                <h4 className="text-lg font-medium text-gray-700 mb-3">Competitor {index + 1}</h4>
+                <h4 className="text-lg font-medium text-gray-700 mb-3">Aspirant {index + 1}</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                     <label htmlFor={`comp-name-${index}`} className="block text-xs font-medium text-gray-600 mb-1">Name <span className="text-red-500">*</span></label>
@@ -279,7 +336,7 @@ const CreatePoll = () => {
                       id={`comp-name-${index}`}
                       value={comp.name}
                       onChange={(e) => updateCompetitor(index, 'name', e.target.value)}
-                      placeholder="Competitor Name"
+                      placeholder="Aspirant Name"
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-800"
                       required
                     />
@@ -310,7 +367,7 @@ const CreatePoll = () => {
                       id={`profile-file-${index}`}
                       accept="image/*"
                       onChange={(e) => handleFileChange(e, index)}
-                      className="hidden" // Hide the default file input
+                      className="hidden" 
                     />
                   </div>
                 </div>
@@ -338,7 +395,6 @@ const CreatePoll = () => {
               }`}
             >
               {submitting ? (
-                // Replaced ActivityIndicator with a CSS spinner
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                   Submitting...
@@ -377,5 +433,4 @@ const CreatePoll = () => {
     </div>
   );
 };
-
 export default CreatePoll;

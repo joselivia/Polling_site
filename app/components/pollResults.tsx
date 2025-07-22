@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 import useSWR from "swr";
 import {
@@ -7,11 +6,7 @@ import {
   ResponsiveContainer,
   Cell,
   Pie,
-  BarChart,
-  Bar,
   PieChart,
-  XAxis,
-  YAxis,
   Legend, 
 } from "recharts";
 import Link from "next/link";
@@ -24,6 +19,7 @@ import {
   Clock,
   Users,
   X,
+  MessagesSquare,
 } from "lucide-react"; 
 
 interface Candidate {
@@ -60,7 +56,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const PollResults = ({ pollId }: { pollId?: number }) => {
   const { data, error, isLoading } = useSWR<PollData>(
-    pollId ? `${baseURL}/api/polls/${pollId}/results` : null,
+    pollId ? `${baseURL}/api/polls/${pollId}` : null,
     fetcher,
     { refreshInterval: 5000 }
   );
@@ -100,19 +96,19 @@ const PollResults = ({ pollId }: { pollId?: number }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
+      <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
         {/* Header */}
         <div className="text-center mb-8 pb-4 border-b border-gray-200">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-3 flex items-center justify-center">
-            <BarChart2 className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" />{" "}
+            <BarChart2 className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" />
             {data.title || "Poll Results"}
           </h1>
           <p className="text-gray-600 text-base sm:text-lg font-medium mb-1 flex items-center justify-center">
-            <Info className="w-4 h-4 mr-2 text-gray-500" /> Region:{" "}
+            <Info className="w-4 h-4 mr-2 text-gray-500" /> Region:
             <span className="font-semibold ml-1">{data.region}</span>
           </p>
           <p className="text-gray-600 text-base sm:text-lg font-medium mb-1 flex items-center justify-center">
-            <Users className="w-4 h-4 mr-2 text-gray-500" /> Total Votes:{" "}
+            <Users className="w-4 h-4 mr-2 text-gray-500" /> Total Votes:
             <span className="font-semibold ml-1">
               {data.totalVotes.toLocaleString()}
             </span>
@@ -124,89 +120,34 @@ const PollResults = ({ pollId }: { pollId?: number }) => {
             </span>
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-gray-50 p-6 rounded-xl shadow-md border border-gray-100 flex flex-col items-center">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-              <PieChartIcon className="w-5 h-5 mr-2 text-purple-600" /> Vote
-              Distribution
-            </h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  dataKey="votes"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  fill="#8884d8"
-                  label={({ name, percentage }) =>
-                    `${name} (${percentage.toFixed(1)}%)`
-                  }
-                  labelLine={false}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell
-                      key={`pie-cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value: number, name: string, props: any) => [
-                    `${value.toLocaleString()} votes`,
-                    props.payload.name,
-                  ]}
-                />
-                <Legend
-                  layout="vertical"
-                  align="right"
-                  verticalAlign="middle"
-                  wrapperStyle={{ paddingLeft: "20px" }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Bar Chart Card */}
-          <div className="bg-gray-50 p-6 rounded-xl shadow-md border border-gray-100 flex flex-col items-center">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-              <BarChart2 className="w-5 h-5 mr-2 text-green-600" /> Votes by
-              Candidate
-            </h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart
+        {/* Pie Chart Section */}
+        <div className="bg-gray-50 p-6 rounded-xl shadow-md border border-gray-100 flex flex-col items-center mb-8">
+          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <PieChartIcon className="w-5 h-5 mr-2 text-purple-600" /> Vote Distribution by Candidate
+          </h2>
+          <ResponsiveContainer width="100%" height={350}>
+            <PieChart>
+              <Pie
                 data={chartData}
-                layout="vertical"
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                dataKey="votes"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={120}
+                fill="#8884d8"
+                label={({ name, percentage }) => `${name} (${percentage.toFixed(1)}%)`}
+                labelLine={false}
               >
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <XAxis
-                  type="number"
-                  tickFormatter={(value) => value.toLocaleString()}
-                />
-                <Tooltip
-                  formatter={(value: number) =>
-                    `${value.toLocaleString()} votes`
-                  }
-                />
-                <Bar dataKey="votes" barSize={30} radius={[5, 5, 0, 0]}>
-                  {chartData.map((entry, index) => (
-                    <Cell
-                      key={`bar-cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+                {chartData.map((entry, index) => (
+                  <Cell key={`pie-cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(value: number, name: string, props: any) => [`${value.toLocaleString()} votes`, props.payload.name]} />
+              <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ paddingLeft: '10px' }} />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
+
 
         {/* Results Table */}
         <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
@@ -261,7 +202,6 @@ const PollResults = ({ pollId }: { pollId?: number }) => {
             </tbody>
           </table>
         </div>
-
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
           <Link href={`/FullvotesInterface?id=${pollId}`} passHref>
@@ -269,11 +209,14 @@ const PollResults = ({ pollId }: { pollId?: number }) => {
               <Info className="w-5 h-5 mr-2" /> Full Details
             </button>
           </Link>
-          <a href={`/vote/${pollId}`} target="_blank" rel="noopener noreferrer">
-            {" "}
-            {/* Open in new tab for voting */}
-            <button className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75">
+          <a href={`/vote/${pollId}`}>
+                  <button className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75">
               <Hand className="w-5 h-5 mr-2" /> Vote Now
+            </button>
+          </a>
+            <a href={`/Opinion/OpinionForm?id=${pollId}`}>
+                  <button className="flex items-center justify-center px-6 py-3 bg-green-600 text-white font-semibold rounded-full shadow-md hover:bg-green-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75">
+              <MessagesSquare className="w-5 h-5 mr-2" /> Opinion Poll
             </button>
           </a>
         </div>

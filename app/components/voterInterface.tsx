@@ -4,8 +4,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { baseURL } from '@/config/baseUrl';
 
-
-
 interface Candidate {
   id: number;
   name: string;
@@ -28,7 +26,7 @@ const VoteInterface = ({ pollId }: { pollId: number }) => {
 
   useEffect(() => {
     const fetchData = () => {
-      axios.get(`${baseURL}/api/polls/${pollId}/results`)
+      axios.get(`${baseURL}/api/polls/${pollId}`)
         .then(res => {
           console.log('API Response:', res.data);
           setData(res.data as PollData);
@@ -103,6 +101,7 @@ const VoteInterface = ({ pollId }: { pollId: number }) => {
         </button>
         {message && <p className="mt-2 text-center text-sm text-green-600">{message}</p>}
       </div>
+
     </div>
   );
 };

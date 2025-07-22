@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, Bar, BarChart, XAxis, YAxis } from "recharts";
 import PollResults from "./pollResults";
 import { baseURL } from "@/config/baseUrl"; 
 import {
@@ -20,7 +20,6 @@ import {
   ListChecks,
 } from "lucide-react";
 
-// Interfaces
 interface Candidate {
   id: number;
   profile?: string; 
@@ -84,14 +83,14 @@ const PollFullDetails = ({ category, id }: PollFullDetailsProps) => {
       setError(null);
       try {
         if (id) {
-          const res = await axios.get<PollData>(`${baseURL}/api/polls/${id}/results`);
+          const res = await axios.get<PollData>(`${baseURL}/api/polls/${id}`);
           setData(res.data);
         } else if (category) {
           const res = await axios.get<PollSummary[]>(`${baseURL}/api/polls?category=${category}`);
           setPolls(res.data);
           if (res.data.length > 0) {
             const firstPoll = res.data[0];
-            const detailsRes = await axios.get<PollData>(`${baseURL}/api/polls/${firstPoll.id}/results`);
+            const detailsRes = await axios.get<PollData>(`${baseURL}/api/polls/${firstPoll.id}`);
             setData(detailsRes.data);
           } else {
             setData(null);
@@ -158,7 +157,7 @@ const PollFullDetails = ({ category, id }: PollFullDetailsProps) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
+      <div className="max-w-8xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
         {/* Header Section */}
         <div className="text-center mb-8 pb-4 border-b border-gray-200">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-3 flex items-center justify-center">
@@ -200,33 +199,90 @@ const PollFullDetails = ({ category, id }: PollFullDetailsProps) => {
           </div>
         </div>
 
-        {/* Pie Chart Section */}
-        <div className="bg-gray-50 p-6 rounded-xl shadow-md border border-gray-100 flex flex-col items-center mb-8">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-            <PieChartIcon className="w-5 h-5 mr-2 text-purple-600" /> Vote Distribution by Candidate
-          </h2>
-          <ResponsiveContainer width="100%" height={350}>
-            <PieChart>
-              <Pie
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-8">
+          <div className="bg-gray-50 p-2 rounded-xl shadow-md border border-gray-100 flex flex-col items-center">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <PieChartIcon className="w-5 h-5 mr-2 text-purple-600" /> Vote
+              Distribution
+            </h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  dataKey="votes"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  fill="#8884d8"
+                  label={({ name, percentage }) =>
+                    `${name} (${percentage.toFixed(1)}%)`
+                  }
+                  labelLine={false}
+                >
+                  {chartData.map((_,index) => (
+                    <Cell
+                      key={`pie-cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(value: number,name: string, props: any) => [
+                    `${value.toLocaleString()} votes`,
+                    props.payload.name,
+                  ]}
+                />
+                <Legend
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="middle"
+                  wrapperStyle={{ paddingLeft: "20px" }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Bar Chart Card */}
+          <div className="bg-gray-50 p-6 rounded-xl shadow-md border border-gray-100 flex flex-col items-center">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <BarChart2 className="w-5 h-5 mr-2 text-green-600" /> Votes by
+              Candidate
+            </h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart
                 data={chartData}
-                dataKey="votes"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={120} // Slightly larger pie
-                fill="#8884d8"
-                label={({ name, percentage }) => `${name} (${percentage.toFixed(1)}%)`}
-                labelLine={false}
+                layout="vertical"
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
-                {chartData.map((entry, index) => (
-                  <Cell key={`pie-cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value: number, name: string, props: any) => [`${value.toLocaleString()} votes`, props.payload.name]} />
-              <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ paddingLeft: '20px' }} />
-            </PieChart>
-          </ResponsiveContainer>
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <XAxis
+                  type="number"
+                  tickFormatter={(value) => value.toLocaleString()}
+                />
+                <Tooltip
+                  formatter={(value: number) =>
+                    `${value.toLocaleString()} votes`
+                  }
+                />
+                <Bar dataKey="votes" barSize={30} radius={[5, 5, 0, 0]}>
+                  {chartData.map((entry, index) => (
+                    <Cell
+                      key={`bar-cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
+
 
         {/* Detailed Results Table */}
         <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center flex items-center justify-center">

@@ -6,6 +6,7 @@ export const Presidential_category=[
 ]
 
 export const CATEGORY_OPTIONS = [
+  "Presidential",
   "Governorship",
   "Senatorial",
   "Parliamentary",

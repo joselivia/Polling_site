@@ -1,17 +1,27 @@
-"use client"; 
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation'; 
+import { baseURL } from "@/config/baseUrl"; 
 
 interface SurveyQuestion {
   id: number;
   type: 'single_choice' | 'open_ended' | 'yes_no_not_sure';
   text: string;
-  options?: string[]; 
-  answer: string; 
+  options?: string[];
+  answer: string;
 }
 
-interface SurveyFormProps {
-  // Add props here if needed, e.g., onSubmit: (data: any) => void;
+interface PollDetails {
+  id: number;
+  title: string;
+  category: string;
+  presidential?: string; 
+  region: string;
+  county: string;
+  constituency: string;
+  ward: string;
+  competitors: { id: number; name: string; party: string; profile?: string }[]; 
 }
 
 const QUESTION_TYPES = {
@@ -20,33 +30,73 @@ const QUESTION_TYPES = {
   YES_NO_NOT_SURE: 'yes_no_not_sure' as const,
 };
 
-const SurveyForm: React.FC<SurveyFormProps> = () => {
+const SurveyForm: React.FC = () => {
+  const searchParams = useSearchParams();
+  const pollId = searchParams.get('id'); 
+
+  const [name, setName] = useState<string>('');
   const [respondentGender, setRespondentGender] = useState<string>('');
   const [respondentAge, setRespondentAge] = useState<string>('');
-  const [questions, setQuestions] = useState<SurveyQuestion[]>([
-    {
-      id: 1,
-      type: QUESTION_TYPES.SINGLE_CHOICE,
-      text: "If elections were held today, who would you vote as the present in the coming 2027 general elections?",
-      options: ["Aspirant A", "Aspirant B", "Aspirant C", "Other"],
-      answer: ""
-    },
-    {
-      id: 2,
-      type: QUESTION_TYPES.OPEN_ENDED,
-      text: "Why would you vote for the aspirant you've chosen above?",
-      answer: ""
-    },
-    {
-      id: 3,
-      type: QUESTION_TYPES.YES_NO_NOT_SURE,
-      text: "If elections were held today, would you vote for H.E. Johnson Sakaja as the next Governor of Nairobi County?",
-      options: ["Yes", "No", "Not Sure"],
-      answer: ""
-    }
-  ]);
+  const [questions, setQuestions] = useState<SurveyQuestion[]>([]); 
+  const [pollDetails, setPollDetails] = useState<PollDetails | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null); 
 
-  const ageOptions: number[] = Array.from({ length: 83 }, (_, i) => i + 18); 
+  const ageOptions: number[] = Array.from({ length: 83 }, (_, i) => i + 18);
+  useEffect(() => {
+    console.log("Poll ID from URL:", pollId);
+    if (!pollId) {
+      setError("No poll ID provided in the URL.");
+      setLoading(false);
+      return;
+    }
+
+    const fetchPollDetails = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch(`${baseURL}/api/polls/${pollId}`);
+        console.log("Fetching poll details from:", `${baseURL}/api/polls/${pollId}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch poll details: ${response.statusText}`);
+        }
+        const data: PollDetails = await response.json();
+        setPollDetails(data);
+        const initialQuestions: SurveyQuestion[] = [
+          {
+            id: 1,
+            type: QUESTION_TYPES.SINGLE_CHOICE,
+            text: `If elections were held today, who would you vote as the ${data.category} in the coming 2027 general elections?`,
+          options: (data.competitors || []).map(comp => comp.name),
+            answer: ""
+          },
+          {
+            id: 2,
+            type: QUESTION_TYPES.OPEN_ENDED,
+            text: "Why would you vote for the aspirant you've chosen above?",
+            answer: ""
+          },
+          {
+            id: 3,
+            type: QUESTION_TYPES.YES_NO_NOT_SURE,
+            text: `Do you think ${data.category} ${data.presidential || data.title} has fulfilled their promises?`, 
+            options: ["Yes", "No", "Not Sure"],
+            answer: ""
+          }
+        ];
+        setQuestions(initialQuestions);
+
+      } catch (err: any) {
+        console.error("Error fetching poll details:", err);
+        setError(err.message || "An error occurred while loading poll details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPollDetails();
+  }, [pollId]); 
 
   const handleQuestionAnswerChange = (id: number, newAnswer: string) => {
     setQuestions(prevQuestions =>
@@ -61,18 +111,19 @@ const SurveyForm: React.FC<SurveyFormProps> = () => {
     let newQuestion: SurveyQuestion = {
       id: newId,
       type: type,
-      text: "", 
+      text: "",
       answer: ""
     };
 
     if (type === QUESTION_TYPES.SINGLE_CHOICE) {
-      newQuestion.options = ["Option 1", "Option 2"]; 
+      newQuestion.options = ["Option 1", "Option 2"];
     } else if (type === QUESTION_TYPES.YES_NO_NOT_SURE) {
       newQuestion.options = ["Yes", "No", "Not Sure"];
     }
 
     setQuestions(prevQuestions => [...prevQuestions, newQuestion]);
   };
+
   const updateQuestionText = (id: number, newText: string) => {
     setQuestions(prevQuestions =>
       prevQuestions.map(q =>
@@ -109,36 +160,112 @@ const SurveyForm: React.FC<SurveyFormProps> = () => {
     setQuestions(prevQuestions => prevQuestions.filter(q => q.id !== id));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Respondent Details:", { respondentGender, respondentAge });
-    console.log("Survey Answers:", questions);
-      if (!respondentGender || !respondentAge || questions.some(q => !q.answer && q.type !== QUESTION_TYPES.OPEN_ENDED && q.type !== QUESTION_TYPES.YES_NO_NOT_SURE)) {
-        alert("Please fill in all required respondent details and answer all questions.");
-        return;
+    setMessage(null); 
+
+    if (!pollId) {
+      setMessage("❌ Error: Poll ID is missing. Cannot submit survey.");
+      return;
     }
-const surveyData = {
- respondent: { gender: respondentGender, age: respondentAge },
-      questions: questions.map(q => ({ id: q.id, text: q.text, answer: q.answer, type: q.type })),
+
+    // Validation
+    if (!name || !respondentGender || !respondentAge) {
+      setMessage("❌ Please fill in all required respondent details (Name, Gender, Age).");
+      return;
+    }
+
+    const unansweredRequiredQuestions = questions.some(q =>
+      (q.type === QUESTION_TYPES.SINGLE_CHOICE || q.type === QUESTION_TYPES.YES_NO_NOT_SURE) && !q.answer
+    );
+
+    if (unansweredRequiredQuestions) {
+      setMessage("❌ Please answer all required survey questions.");
+      return;
+    }
+
+    const surveyData = {
+      pollId: parseInt(pollId), 
+      respondent: { name, gender: respondentGender, age: parseInt(respondentAge) },
+      answers: questions.map(q => ({
+        id: q.id,
+        text: q.text,
+        type: q.type,
+        answer: q.answer,
+        options: q.options || undefined
+      })),
     };
-    fetch('/api/submit-survey', {
-      method: 'POST',
-       headers: { 'Content-Type': 'application/json' },
-       body: JSON.stringify(surveyData),
-     })
-     .then(response => response.json())
-     .then(data => console.log('Survey submitted successfully:', data))
-     .catch(error => console.error('Error submitting survey:', error));
+
+    try {
+      const response = await fetch(`${baseURL}/api/opinion_poll`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(surveyData),
+      });
+
+      if (response.ok) {
+        setMessage("✅ Survey submitted successfully!");
+        setName('');
+        setRespondentGender('');
+        setRespondentAge('');
+        setQuestions(prevQuestions => prevQuestions.map(q => ({ ...q, answer: "" })));
+      
+      } else {
+        const errorData = await response.json();
+        setMessage(`❌ Failed to submit survey: ${errorData.message || response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Error submitting survey:', error);
+      setMessage("❌ Network or server error. Please try again.");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="text-blue-600 text-xl font-semibold">Loading poll details...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100">
+        <div className="text-red-700 text-xl font-semibold p-4 rounded-lg bg-white shadow-md">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  if (!pollDetails) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="text-gray-600 text-xl font-semibold">Poll not found or not loaded.</div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="p-6 max-w-4xl mx-auto bg-white shadow-lg rounded-xl my-8">
-      <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Opinion Poll Survey</h2>
+      <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">Opinion Poll Survey</h2>
+      <p className="text-lg text-gray-600 mb-6 text-center">For Poll: <span className="font-semibold text-blue-700">{pollDetails.title}</span></p>
 
-      {/* Respondent Details */}
       <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">Respondent Details</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 border border-gray-200 rounded-xl shadow-sm bg-gray-50">
-        {/* Left Column: Gender */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-5 border border-gray-200 rounded-xl shadow-sm bg-gray-50">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+            Name: <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+            placeholder="Enter Name"
+            className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
+            required
+          />
+        </div>
         <div>
           <label htmlFor="respondent-gender" className="block text-sm font-medium text-gray-700 mb-2">
             Gender <span className="text-red-500">*</span>
@@ -158,7 +285,6 @@ const surveyData = {
           </select>
         </div>
 
-        {/* Right Column: Age */}
         <div>
           <label htmlFor="respondent-age" className="block text-sm font-medium text-gray-700 mb-2">
             Age <span className="text-red-500">*</span>
@@ -189,28 +315,34 @@ const surveyData = {
               <label htmlFor={`question-${question.id}`} className="block text-md font-medium text-gray-800 mb-2">
                 {`Question ${qIndex + 1}:`}
               </label>
-              <button
-                type="button"
-                onClick={() => removeQuestion(question.id)}
-                className="text-red-600 hover:text-red-800 transition-colors duration-200 text-sm font-medium"
-              >
-                Remove Question
-              </button>
+              {/* Only allow removing dynamically added questions, not initial ones */}
+              {qIndex >= 3 && ( // Assuming initial 3 questions are fixed
+                <button
+                  type="button"
+                  onClick={() => removeQuestion(question.id)}
+                  className="text-red-600 hover:text-red-800 transition-colors duration-200 text-sm font-medium"
+                >
+                  Remove Question
+                </button>
+              )}
             </div>
 
             {/* Question Text Input (for dynamic editing) */}
+            {/* For initial questions, you might want to make this readOnly or hide it if they are fixed */}
             <input
               type="text"
               value={question.text}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateQuestionText(question.id, e.target.value)}
               placeholder="Enter your question here"
               className="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white mb-4"
+              // Make initial questions' text read-only if they are fixed
+              readOnly={qIndex < 3}
             />
 
             {question.type === QUESTION_TYPES.SINGLE_CHOICE && (
               <div className="space-y-3">
                 <p className="text-sm font-medium text-gray-700 mb-2">Select one option:</p>
-                {question.options?.map((option: string, oIndex: number) => ( // Use optional chaining for options
+                {question.options?.map((option: string, oIndex: number) => (
                   <div key={oIndex} className="flex items-center">
                     <input
                       type="radio"
@@ -222,22 +354,30 @@ const surveyData = {
                       className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                     />
                     <label htmlFor={`question-${question.id}-option-${oIndex}`} className="ml-3 text-sm text-gray-700">
-                      <input
-                        type="text"
-                        value={option}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateQuestionOption(question.id, oIndex, e.target.value)}
-                        className="p-1 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-300"
-                      />
+                      {/* For the first question's options, they should not be editable */}
+                      {qIndex === 0 ? (
+                        <span>{option}</span>
+                      ) : (
+                        <input
+                          type="text"
+                          value={option}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateQuestionOption(question.id, oIndex, e.target.value)}
+                          className="p-1 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-300"
+                        />
+                      )}
                     </label>
                   </div>
                 ))}
-                <button
-                  type="button"
-                  onClick={() => addOptionToQuestion(question.id)}
-                  className="mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
-                >
-                  + Add Option
-                </button>
+                {/* Only allow adding options to dynamically added single choice questions */}
+                {qIndex >= 3 && (
+                  <button
+                    type="button"
+                    onClick={() => addOptionToQuestion(question.id)}
+                    className="mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    + Add Option
+                  </button>
+                )}
               </div>
             )}
 
@@ -247,7 +387,7 @@ const surveyData = {
                   id={`question-${question.id}`}
                   value={question.answer}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleQuestionAnswerChange(question.id, e.target.value)}
-                  rows={3} // Changed from string "3" to number 3
+                  rows={3}
                   className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
                   placeholder="Type your answer here..."
                 ></textarea>
@@ -256,7 +396,7 @@ const surveyData = {
 
             {question.type === QUESTION_TYPES.YES_NO_NOT_SURE && (
               <div className="space-y-3">
-                {question.options?.map((option: string, oIndex: number) => ( // Use optional chaining for options
+                {question.options?.map((option: string, oIndex: number) => (
                   <div key={oIndex} className="flex items-center">
                     <input
                       type="radio"
@@ -310,6 +450,12 @@ const surveyData = {
           Submit Survey
         </button>
       </div>
+
+      {message && (
+        <p className={`text-center mt-6 text-base font-medium ${message.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
+          {message}
+        </p>
+      )}
     </form>
   );
 };

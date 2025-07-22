@@ -1,17 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import CustomPoll from "../customePoll/custompoll"; 
 import {
   CATEGORY_OPTIONS,
   countyAssemblyWardMap,
   countyConstituencyMap,
   Presidential_category,
   regionCountyMap,
-} from "./Places"; 
+} from "./Places";
 import { useRouter } from "next/navigation";
-import { baseURL } from "@/config/baseUrl"; 
-import { Plus, X, Upload, Send, Edit, SquarePen, Megaphone } from "lucide-react";
+import { baseURL } from "@/config/baseUrl";
+import { Plus, X, Upload, Send, Megaphone } from "lucide-react";
 
 interface Competitor {
   name: string;
@@ -21,7 +20,7 @@ interface Competitor {
 
 const CreatePoll = () => {
   const [title, setTitle] = useState("");
-  const [presidential, setPresidential] = useState(""); 
+  const [presidential, setPresidential] = useState("");
   const [category, setCategory] = useState("");
   const [region, setRegion] = useState("");
   const [county, setCounty] = useState("");
@@ -31,13 +30,14 @@ const CreatePoll = () => {
     { name: "", party: "", profileFile: null },
   ]);
   const [message, setMessage] = useState("");
-  const [showCustomForm, setShowCustomForm] = useState(false);
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
 
   const counties = region ? regionCountyMap[region] : [];
   const constituencies = county ? countyConstituencyMap[county] : [];
   const wards = constituency ? countyAssemblyWardMap[constituency] : [];
+
+  const showPresidentialExecutive = category === "Presidential";
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = e.target.files ? e.target.files[0] : null;
@@ -53,14 +53,14 @@ const CreatePoll = () => {
     setMessage("");
 
     // Validation for poll details
-    if (!title || !presidential || !category || !region || !county || !constituency || !ward) {
+    if (!title || !category || !region || !county || !constituency || !ward || (showPresidentialExecutive && !presidential)) {
       setMessage("❌ Please fill in all required poll details.");
       setSubmitting(false);
       return;
     }
 
     // Validation for competitor details
-    if (competitors.some(comp => !comp.name )) {
+    if (competitors.some(comp => !comp.name)) {
       setMessage("❌ Please fill in all competitor details.");
       setSubmitting(false);
       return;
@@ -68,13 +68,19 @@ const CreatePoll = () => {
 
     const formData = new FormData();
     formData.append("title", title);
-    formData.append("presidential", presidential); 
     formData.append("category", category);
+
+    if (showPresidentialExecutive) {
+      formData.append("presidential", presidential);
+    } else {
+      formData.append("presidential", "");
+    }
+
     formData.append("region", region);
     formData.append("county", county);
     formData.append("constituency", constituency);
     formData.append("ward", ward);
-   
+
     formData.append(
       "competitors",
       JSON.stringify(competitors.map(({ name, party }) => ({ name, party })))
@@ -93,9 +99,12 @@ const CreatePoll = () => {
       });
 
       if (response.ok) {
-        setMessage("✅ Poll created successfully! Redirecting...");
+        const result = await response.json(); 
+        const pollId = result.id; // Assuming your API returns { id: <poll_id> }
+
+        setMessage("✅ Poll created successfully! Redirecting to survey...");
         setTitle("");
-        setPresidential(""); 
+        setPresidential("");
         setCategory("");
         setRegion("");
         setCounty("");
@@ -104,7 +113,7 @@ const CreatePoll = () => {
         setCompetitors([{ name: "", party: "", profileFile: null }]);
 
         setTimeout(() => {
-          router.push("/");
+             router.push(`/Opinion/OpinionForm?id=${pollId}`);console.log("Redirecting to survey with ID:", pollId);
         }, 1500);
       } else {
         const errorData = await response.json();
@@ -146,17 +155,9 @@ const CreatePoll = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
       <div className="max-w-8xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 pb-4 border-b border-gray-200">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 sm:mb-0 flex items-center">
-            <Megaphone className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" /> Create New Poll
-          </h2>
-          <button
-            onClick={() => setShowCustomForm(true)}
-            className="flex items-center px-4 py-2 bg-purple-600 text-white font-semibold rounded-full shadow-md hover:bg-purple-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-75 text-sm"
-          >
-            <SquarePen className="w-4 h-4 mr-2" /> Create Specific Poll
-          </button>
-        </div>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 sm:mb-0 flex items-center">
+          <Megaphone className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" /> Create New Poll
+        </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Poll Details Section */}
@@ -176,44 +177,54 @@ const CreatePoll = () => {
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="presidential" className="block text-sm font-medium text-gray-700 mb-2">
-                Presidential Executive <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="presidential"
-                value={presidential}
-                onChange={(e) => setPresidential(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
-                required
-              >
-                <option value="" disabled>Select a category</option>
-                {Presidential_category.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                  Category <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="category"
+                  value={category}
+                  onChange={(e) => {
+                    setCategory(e.target.value);
+                    if (e.target.value !== "President") {
+                      setPresidential("");
+                    }
+                  }}
+                  className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
+                  required
+                >
+                  <option value="" disabled>Select a category</option>
+                  {CATEGORY_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {showPresidentialExecutive && (
+                <div>
+                  <label htmlFor="presidential" className="block text-sm font-medium text-gray-700 mb-2">
+                    Presidential Executive <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="presidential"
+                    value={presidential}
+                    onChange={(e) => setPresidential(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
+                    required={showPresidentialExecutive}
+                  >
+                    <option value="" disabled>Select category</option>
+                    {Presidential_category.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
-            <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-                Category <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
-                required
-              >
-                <option value="" disabled>Select a category</option>
-                {CATEGORY_OPTIONS.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </div></div>
           </div>
 
           {/* Location Details */}
@@ -311,7 +322,7 @@ const CreatePoll = () => {
             </div>
           </div>
 
-             {/* Competitors Section */}
+          {/* Competitors Section */}
           <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">Aspirant</h3>
           <div className="space-y-4">
             {competitors.map((comp, index) => (
@@ -341,7 +352,7 @@ const CreatePoll = () => {
                     />
                   </div>
                   <div>
-                    <label htmlFor={`comp-party-${index}`} className="block text-xs font-medium text-gray-600 mb-1">Party <span className="text-red-500">*</span></label>
+                    <label htmlFor={`comp-party-${index}`} className="block text-xs font-medium text-gray-600 mb-1">Party</label>
                     <input
                       type="text"
                       id={`comp-party-${index}`}
@@ -349,7 +360,6 @@ const CreatePoll = () => {
                       onChange={(e) => updateCompetitor(index, 'party', e.target.value)}
                       placeholder="Party Affiliation/If Independent leave blank"
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-800"
-                      required
                     />
                   </div>
                   <div>
@@ -366,7 +376,7 @@ const CreatePoll = () => {
                       id={`profile-file-${index}`}
                       accept="image/*"
                       onChange={(e) => handleFileChange(e, index)}
-                      className="hidden" 
+                      className="hidden"
                     />
                   </div>
                 </div>
@@ -400,7 +410,7 @@ const CreatePoll = () => {
                 </div>
               ) : (
                 <>
-                  <Send className="w-5 h-5 mr-2" /> Submit Poll
+                  <Send className="w-5 h-5 mr-2" /> Create Poll
                 </>
               )}
             </button>
@@ -412,24 +422,8 @@ const CreatePoll = () => {
           </p>
         )}
       </div>
-      {showCustomForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white p-6 sm:p-8 rounded-xl shadow-2xl max-w-lg w-full relative transform transition-all duration-300 scale-100 opacity-100">
-            <button
-              onClick={() => setShowCustomForm(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-900 transition-colors duration-200 p-1 rounded-full bg-gray-100 hover:bg-gray-200"
-              title="Close"
-            >
-              <X className="w-6 h-6" />
-            </button>
-            <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-              <Edit className="mr-2 w-6 h-6 text-purple-600" /> Custom Poll Form
-            </h3>
-            <CustomPoll />
-          </div>
-        </div>
-      )}
     </div>
   );
 };
+
 export default CreatePoll;

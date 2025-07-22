@@ -26,7 +26,6 @@ import {
   X,
 } from "lucide-react"; 
 
-// Interfaces
 interface Candidate {
   id: number;
   name: string;
@@ -36,7 +35,7 @@ interface Candidate {
 
 interface PollData {
   id: number;
-  pollTitle: string;
+  title: string;
   region: string;
   totalVotes: number;
   results: Candidate[];
@@ -106,7 +105,7 @@ const PollResults = ({ pollId }: { pollId?: number }) => {
         <div className="text-center mb-8 pb-4 border-b border-gray-200">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-3 flex items-center justify-center">
             <BarChart2 className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" />{" "}
-            {data.pollTitle || "Poll Results"}
+            {data.title || "Poll Results"}
           </h1>
           <p className="text-gray-600 text-base sm:text-lg font-medium mb-1 flex items-center justify-center">
             <Info className="w-4 h-4 mr-2 text-gray-500" /> Region:{" "}

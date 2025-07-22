@@ -21,7 +21,7 @@ interface Competitor {
 
 const CreatePoll = () => {
   const [title, setTitle] = useState("");
-  const [presidential, setPresidential] = useState(""); // Corrected typo: Presidential
+  const [presidential, setPresidential] = useState(""); 
   const [category, setCategory] = useState("");
   const [region, setRegion] = useState("");
   const [county, setCounty] = useState("");
@@ -60,7 +60,7 @@ const CreatePoll = () => {
     }
 
     // Validation for competitor details
-    if (competitors.some(comp => !comp.name || !comp.party)) {
+    if (competitors.some(comp => !comp.name )) {
       setMessage("❌ Please fill in all competitor details.");
       setSubmitting(false);
       return;
@@ -68,14 +68,13 @@ const CreatePoll = () => {
 
     const formData = new FormData();
     formData.append("title", title);
-    formData.append("presidential", presidential); // Corrected typo
+    formData.append("presidential", presidential); 
     formData.append("category", category);
     formData.append("region", region);
     formData.append("county", county);
     formData.append("constituency", constituency);
     formData.append("ward", ward);
-
-    
+   
     formData.append(
       "competitors",
       JSON.stringify(competitors.map(({ name, party }) => ({ name, party })))
@@ -95,9 +94,8 @@ const CreatePoll = () => {
 
       if (response.ok) {
         setMessage("✅ Poll created successfully! Redirecting...");
-        // Reset all form states on success
         setTitle("");
-        setPresidential(""); // Corrected typo
+        setPresidential(""); 
         setCategory("");
         setRegion("");
         setCounty("");
@@ -177,6 +175,7 @@ const CreatePoll = () => {
                 required
               />
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="presidential" className="block text-sm font-medium text-gray-700 mb-2">
                 Presidential Executive <span className="text-red-500">*</span>
@@ -214,7 +213,7 @@ const CreatePoll = () => {
                   </option>
                 ))}
               </select>
-            </div>
+            </div></div>
           </div>
 
           {/* Location Details */}
@@ -348,7 +347,7 @@ const CreatePoll = () => {
                       id={`comp-party-${index}`}
                       value={comp.party}
                       onChange={(e) => updateCompetitor(index, 'party', e.target.value)}
-                      placeholder="Party Affiliation"
+                      placeholder="Party Affiliation/If Independent leave blank"
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-800"
                       required
                     />

@@ -23,7 +23,7 @@ import {
 // Interfaces
 interface Candidate {
   id: number;
-  profile?: string; // URL to profile image
+  profile?: string; 
   name: string;
   party?: string;
   voteCount: number;
@@ -32,11 +32,13 @@ interface Candidate {
 
 interface PollData {
   id: number;
-  pollTitle: string;
+  title: string;
+  presidential?: string;
   category?: string;
   region: string;
   county?: string;
   constituency?: string;
+  ward?: string;
   party?: string; 
   spoiled_votes?: number;
   totalVotes: number;
@@ -59,16 +61,15 @@ interface PollFullDetailsProps {
 }
 
 const COLORS = [
-  "#1e40af", // Blue
-  "#9333ea", // Purple
-  "#059669", // Green
-  "#f59e0b", // Amber
-  "#ef4444", // Red
-  "#3b82f6", // Lighter Blue
-  "#ca8a04", // Darker Amber
-  "#be123c", // Darker Red
-  "#6d28d9", // Darker Purple
-  "#16a34a", // Darker Green
+  "#1e40af", 
+  "#9333ea", 
+  "#059669", 
+  "#f59e0b", 
+  "#ef4444",
+  "#3b82f6", 
+  "#ca8a04", 
+  "#be123c", 
+  "#16a34a", 
 ];
 
 const PollFullDetails = ({ category, id }: PollFullDetailsProps) => {
@@ -157,16 +158,19 @@ const PollFullDetails = ({ category, id }: PollFullDetailsProps) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
+      <div className="max-w-7xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
         {/* Header Section */}
         <div className="text-center mb-8 pb-4 border-b border-gray-200">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-3 flex items-center justify-center">
-            <BarChart2 className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" /> {data.pollTitle || "Poll Details"}
+            <BarChart2 className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" /> {data.title || "Poll Details"}
           </h1>
+           <p className="text-gray-600 text-base sm:text-lg font-medium mb-1 flex items-center justify-center">
+            <Info className="w-4 h-4 mr-2 text-gray-500" /> President Executive: <span className="font-semibold ml-1">{data.presidential || "N/A"}</span>
+          </p>
           <p className="text-gray-600 text-base sm:text-lg font-medium mb-1 flex items-center justify-center">
             <Info className="w-4 h-4 mr-2 text-gray-500" /> Category: <span className="font-semibold ml-1">{data.category || "N/A"}</span>
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mt-2">
             <p className="text-gray-600 text-sm sm:text-base flex items-center justify-center">
               <MapPin className="w-4 h-4 mr-1 text-gray-500" /> Region: <span className="font-semibold ml-1">{data.region}</span>
             </p>
@@ -175,6 +179,9 @@ const PollFullDetails = ({ category, id }: PollFullDetailsProps) => {
             </p>
             <p className="text-gray-600 text-sm sm:text-base flex items-center justify-center">
               <Building2 className="w-4 h-4 mr-1 text-gray-500" /> Constituency: <span className="font-semibold ml-1">{data.constituency || "N/A"}</span>
+            </p>
+             <p className="text-gray-600 text-sm sm:text-base flex items-center justify-center">
+              <Building2 className="w-4 h-4 mr-1 text-gray-500" /> Ward: <span className="font-semibold ml-1">{data.ward || "N/A"}</span>
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">

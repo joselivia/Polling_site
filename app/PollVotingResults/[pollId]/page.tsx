@@ -49,12 +49,11 @@ interface AggregatedResponse {
   isCompetitorQuestion?: boolean;
   totalResponses: number;
   choices?: {
-    id: number | string; // Can be optionId or competitorId or string (e.g., 'Yes')
-    label: string;      // Option text or Competitor name
+    id: number | string;
+    label: string;     
     count: number;
     percentage: number;
   }[];
-  // For open-ended questions
   openEndedResponses?: string[];
 }
 
@@ -71,7 +70,6 @@ interface PollResultsData {
   demographics: DemographicsData;
 }
 
-// Color palette for charts
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF6B6B'];
 
 const PollVotingResultsPage = () => {
@@ -90,8 +88,7 @@ const PollVotingResultsPage = () => {
 
     const fetchPollResults = async () => {
       try {
-        // Adjust this endpoint to match your backend's results endpoint
-        const response = await fetch(`${baseURL}/api/polls/${pollId}/results`);
+           const response = await fetch(`${baseURL}/api/polls/${pollId}/results`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || "Failed to fetch poll results.");

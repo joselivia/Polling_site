@@ -2,8 +2,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { baseURL } from "@/config/baseUrl";
-import { Send, Loader2, Frown, Users, HelpCircle, Megaphone } from "lucide-react";
-import { v4 as uuidv4 } from 'uuid';
+import {
+  Send,
+  Loader2,
+  Frown,
+  Users,
+  HelpCircle,
+  Megaphone,
+} from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
 
 interface Competitor {
   id: number;
@@ -19,7 +26,7 @@ interface Option {
 
 interface Question {
   id: number;
-  type: 'single-choice' | 'open-ended' | 'yes-no-notsure';
+  type: "single-choice" | "open-ended" | "yes-no-notsure";
   questionText: string;
   options?: Option[];
   isCompetitorQuestion?: boolean;
@@ -50,17 +57,21 @@ const PollVotingPage = () => {
   const params = useParams();
   const pollId = params.pollId as string;
   const router = useRouter();
-  const [respondentName, setRespondentName] = useState<string>(''); 
-  const [respondentGender, setRespondentGender] = useState<string>('');
-  const [respondentAge, setRespondentAge] = useState<string>(''); 
+  const [respondentName, setRespondentName] = useState<string>("");
+  const [respondentGender, setRespondentGender] = useState<string>("");
+  const [respondentAge, setRespondentAge] = useState<string>("");
   const [pollData, setPollData] = useState<PollData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const [selections, setSelections] = useState<{ [key: number]: number | string | null }>({});
-  const [mainCompetitorSelection, setMainCompetitorSelection] = useState<number | null>(null);
+  const [selections, setSelections] = useState<{
+    [key: number]: number | string | null;
+  }>({});
+  const [mainCompetitorSelection, setMainCompetitorSelection] = useState<
+    number | null
+  >(null);
   const ageOptions: number[] = Array.from({ length: 83 }, (_, i) => i + 18);
 
   useEffect(() => {
@@ -81,11 +92,10 @@ const PollVotingPage = () => {
         setPollData(data);
 
         const initialSelections: { [key: number]: number | string | null } = {};
-        data.questions.forEach(q => {
+        data.questions.forEach((q) => {
           initialSelections[q.id] = null;
         });
         setSelections(initialSelections);
-
       } catch (err: any) {
         setError(err.message || "An unknown error occurred.");
       } finally {
@@ -96,8 +106,11 @@ const PollVotingPage = () => {
     fetchPollData();
   }, [pollId]);
 
-  const handleDynamicQuestionSelectionChange = (questionId: number, value: number | string | null) => {
-    setSelections(prev => ({
+  const handleDynamicQuestionSelectionChange = (
+    questionId: number,
+    value: number | string | null
+  ) => {
+    setSelections((prev) => ({
       ...prev,
       [questionId]: value,
     }));
@@ -122,14 +135,15 @@ const PollVotingPage = () => {
       return;
     }
 
-    const userIdentifier = localStorage.getItem('user_poll_uuid') || uuidv4();
-    localStorage.setItem('user_poll_uuid', userIdentifier);
+    const userIdentifier = localStorage.getItem("user_poll_uuid") || uuidv4();
+    localStorage.setItem("user_poll_uuid", userIdentifier);
 
     const responses: VoteResponse[] = [];
 
-    const mainCompetitorQuestion = pollData.questions.find(q => q.isCompetitorQuestion);
+    const mainCompetitorQuestion = pollData.questions.find(
+      (q) => q.isCompetitorQuestion
+    );
 
-    // Handle the main competitor selection (if applicable)
     if (pollData.competitors.length > 0 && mainCompetitorQuestion) {
       if (mainCompetitorSelection === null) {
         setError("Please select an aspirant for the main poll.");
@@ -144,9 +158,7 @@ const PollVotingPage = () => {
       });
     }
 
-    // Process other questions
     for (const q of pollData.questions) {
-      // Skip if this question is the main competitor question already handled above
       if (mainCompetitorQuestion && q.id === mainCompetitorQuestion.id) {
         continue;
       }
@@ -154,9 +166,13 @@ const PollVotingPage = () => {
       const selection = selections[q.id];
 
       if (q.isCompetitorQuestion) {
-        // This handles other questions that are also competitor-based, if any
-        if (typeof selection !== 'number' || !pollData.competitors.some(comp => comp.id === selection)) {
-          setError(`Please select a competitor for question: "${q.questionText}"`);
+        if (
+          typeof selection !== "number" ||
+          !pollData.competitors.some((comp) => comp.id === selection)
+        ) {
+          setError(
+            `Please select a competitor for question: "${q.questionText}"`
+          );
           setSubmitting(false);
           return;
         }
@@ -166,8 +182,11 @@ const PollVotingPage = () => {
           selectedOptionId: null,
           openEndedResponse: null,
         });
-      } else if (q.type === 'single-choice' || q.type === 'yes-no-notsure') {
-        if (typeof selection !== 'number' || !q.options?.some(opt => opt.id === selection)) {
+      } else if (q.type === "single-choice" || q.type === "yes-no-notsure") {
+        if (
+          typeof selection !== "number" ||
+          !q.options?.some((opt) => opt.id === selection)
+        ) {
           setError(`Please select an option for question: "${q.questionText}"`);
           setSubmitting(false);
           return;
@@ -178,9 +197,11 @@ const PollVotingPage = () => {
           selectedCompetitorId: null,
           openEndedResponse: null,
         });
-      } else if (q.type === 'open-ended') {
-        if (typeof selection !== 'string' || selection.trim() === '') {
-          setError(`Please provide an answer for question: "${q.questionText}"`);
+      } else if (q.type === "open-ended") {
+        if (typeof selection !== "string" || selection.trim() === "") {
+          setError(
+            `Please provide an answer for question: "${q.questionText}"`
+          );
           setSubmitting(false);
           return;
         }
@@ -198,37 +219,40 @@ const PollVotingPage = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-User-Identifier": userIdentifier
+          "X-User-Identifier": userIdentifier,
         },
         body: JSON.stringify({
           userIdentifier,
           responses,
-          respondentName: respondentName.trim(), 
-          respondentAge: parseInt(respondentAge), 
+          respondentName: respondentName.trim(),
+          respondentAge: parseInt(respondentAge),
           respondentGender,
         }),
       });
 
       if (response.ok) {
         setMessage("✅ Your vote has been submitted successfully!");
-        setRespondentName(''); 
-        setRespondentGender('');
-        setRespondentAge('');
+        setRespondentName("");
+        setRespondentGender("");
+        setRespondentAge("");
         setSelections({});
         setMainCompetitorSelection(null);
-        // setTimeout(() => router.push(`/PollVotingResults/${pollId}`), 1500); // Re-enable if you want redirect
+        setTimeout(() => router.push('/Thankyou'), 1000); 
       } else {
         const errorData = await response.json();
-        setError(`❌ Submission failed: ${errorData.message || response.statusText}`);
+        setError(
+          `❌ Submission failed: ${errorData.message || response.statusText}`
+        );
       }
     } catch (err: any) {
       console.error("Submission error:", err);
-      setError(`❌ Network or server error: ${err.message || "Please try again."}`);
+      setError(
+        `❌ Network or server error: ${err.message || "Please try again."}`
+      );
     } finally {
       setSubmitting(false);
     }
   };
-
 
   if (loading) {
     return (
@@ -243,10 +267,12 @@ const PollVotingPage = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-pink-100 p-8 text-center">
         <Frown className="h-20 w-20 text-red-500 mb-6" />
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">Error Loading Poll</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-4">
+          Error Loading Poll
+        </h1>
         <p className="text-lg text-red-600 mb-8">{error}</p>
         <button
-          onClick={() => router.push('/')}
+          onClick={() => router.push("/")}
           className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300"
         >
           Go to Home
@@ -262,24 +288,45 @@ const PollVotingPage = () => {
       </div>
     );
   }
-  const competitorQuestions = pollData.questions.filter(q => q.isCompetitorQuestion);
-  const otherQuestions = pollData.questions.filter(q => !q.isCompetitorQuestion);
+  const competitorQuestions = pollData.questions.filter(
+    (q) => q.isCompetitorQuestion
+  );
+  const otherQuestions = pollData.questions.filter(
+    (q) => !q.isCompetitorQuestion
+  );
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
       <div className="max-w-8xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
         <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 sm:mb-6 flex items-center">
-          <Megaphone className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" /> Vote in Poll: {pollData.title}
+          <Megaphone className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" />{" "}
+          Vote in Poll: {pollData.title}
         </h2>
-       <p className="text-lg text-gray-600 mb-8">
-Category: <span className="font-semibold">{pollData.category}</span>
-            {pollData.category === 'Presidential' && pollData.presidential && ( 
-                <span className="ml-2">| Presidential: <span className="font-semibold">{pollData.presidential}</span></span>
-            )}
- | Region: <span className="font-semibold">{pollData.region}</span>
-            {pollData.county && <span className="ml-2">| County: <span className="font-semibold">{pollData.county}</span></span>}
-            {pollData.constituency && <span className="ml-2">| Constituency: <span className="font-semibold">{pollData.constituency}</span></span>}
-            {pollData.ward && <span className="ml-2">| Ward: <span className="font-semibold">{pollData.ward}</span></span>}
- </p>
+        <p className="text-lg text-gray-600 mb-8">
+          Category: <span className="font-semibold">{pollData.category}</span>
+          {pollData.category === "Presidential" && pollData.presidential && (
+            <span className="ml-2">
+              | Presidential:{" "}
+              <span className="font-semibold">{pollData.presidential}</span>
+            </span>
+          )}
+          | Region: <span className="font-semibold">{pollData.region}</span>
+          {pollData.county && (
+            <span className="ml-2">
+              | County: <span className="font-semibold">{pollData.county}</span>
+            </span>
+          )}
+          {pollData.constituency && (
+            <span className="ml-2">
+              | Constituency:{" "}
+              <span className="font-semibold">{pollData.constituency}</span>
+            </span>
+          )}
+          {pollData.ward && (
+            <span className="ml-2">
+              | Ward: <span className="font-semibold">{pollData.ward}</span>
+            </span>
+          )}
+        </p>
 
         {error && (
           <p className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
@@ -287,40 +334,60 @@ Category: <span className="font-semibold">{pollData.category}</span>
           </p>
         )}
         {message && (
-          <p className={`px-4 py-3 rounded relative mb-4 ${message.startsWith('✅') ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-blue-100 border border-blue-400 text-blue-700'}`}>
+          <p
+            className={`px-4 py-3 rounded relative mb-4 ${
+              message.startsWith("✅")
+                ? "bg-green-100 border border-green-400 text-green-700"
+                : "bg-blue-100 border border-blue-400 text-blue-700"
+            }`}
+          >
             {message}
           </p>
         )}
 
         <form onSubmit={handleSubmitVote} className="space-y-10">
-          <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">Respondent Details</h3>
+          <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-4">
+            Respondent Details
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-5 border border-gray-200 rounded-xl shadow-sm bg-gray-50">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Name: <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                value={respondentName} 
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRespondentName(e.target.value)}
+                value={respondentName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setRespondentName(e.target.value)
+                }
                 placeholder="Enter Name"
                 className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
                 required
               />
             </div>
             <div>
-              <label htmlFor="respondent-gender" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="respondent-gender"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Gender <span className="text-red-500">*</span>
               </label>
               <select
                 id="respondent-gender"
                 value={respondentGender}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRespondentGender(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  setRespondentGender(e.target.value)
+                }
                 className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
                 required
               >
-                <option value="" disabled>Select Gender</option>
-                <option value="Male">Male</option> 
+                <option value="" disabled>
+                  Select Gender
+                </option>
+                <option value="Male">Male</option>
                 <option value="Female">Female</option>
                 <option value="Other">Other</option>
                 <option value="Prefer not to say">Prefer not to say</option>
@@ -328,17 +395,24 @@ Category: <span className="font-semibold">{pollData.category}</span>
             </div>
 
             <div>
-              <label htmlFor="respondent-age" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="respondent-age"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Age <span className="text-red-500">*</span>
               </label>
               <select
                 id="respondent-age"
                 value={respondentAge}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRespondentAge(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                  setRespondentAge(e.target.value)
+                }
                 className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
                 required
               >
-                <option value="" disabled>Select Age</option>
+                <option value="" disabled>
+                  Select Age
+                </option>
                 {ageOptions.map((age: number) => (
                   <option key={age} value={age}>
                     {age}
@@ -347,90 +421,118 @@ Category: <span className="font-semibold">{pollData.category}</span>
               </select>
             </div>
           </div>
-          {pollData.competitors.length > 0 && competitorQuestions.length > 0 && (
-            <div className="bg-blue-50 p-6 rounded-xl shadow-md border border-blue-200">
-              <h3 className="text-2xl font-bold text-blue-800 mb-6 flex items-center">
-                <Users className="w-7 h-7 mr-3 text-blue-600" />
-                {competitorQuestions[0].questionText}
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {pollData.competitors.map((competitor) => (
-                  <label
-                    key={competitor.id}
-                    className={`block cursor-pointer p-4 rounded-lg border-2 transition-all duration-200 ${
-                      mainCompetitorSelection === competitor.id
-                        ? "border-blue-600 bg-blue-100 shadow-lg"
-                        : "border-gray-300 bg-white hover:border-blue-400 hover:shadow-md"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="mainCompetitor"
-                      value={competitor.id}
-                      checked={mainCompetitorSelection === competitor.id}
-                      onChange={() => setMainCompetitorSelection(competitor.id)}
-                      className="sr-only"
-                    />
-                    <div className="flex flex-col items-center text-center">
-                      {competitor.profileImage ? (
-                        <img
-                          src={competitor.profileImage}
-                          alt={competitor.name}
-                          className="w-24 h-24 rounded-full object-cover mb-3 border border-gray-200 shadow-sm"
-                          onError={(e) => {
-                            e.currentTarget.src = 'https://via.placeholder.com/96x96?text=No+Image';
-                            e.currentTarget.alt = 'Image not found';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-lg font-bold mb-3">
-                          No Img
-                        </div>
-                      )}
-                      <h4 className="text-lg font-semibold text-gray-800">{competitor.name}</h4>
-                      {competitor.party && (
-                        <p className="text-sm text-gray-600">{competitor.party}</p>
-                      )}
-                    </div>
-                  </label>
-                ))}
+          {pollData.competitors.length > 0 &&
+            competitorQuestions.length > 0 && (
+              <div className="bg-blue-50 p-6 rounded-xl shadow-md border border-blue-200">
+                <h3 className="text-2xl font-bold text-blue-800 mb-6 flex items-center">
+                  <Users className="w-7 h-7 mr-3 text-blue-600" />
+                  {competitorQuestions[0].questionText}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {pollData.competitors.map((competitor) => (
+                    <label
+                      key={competitor.id}
+                      className={`block cursor-pointer p-4 rounded-lg border-2 transition-all duration-200 ${
+                        mainCompetitorSelection === competitor.id
+                          ? "border-blue-600 bg-blue-100 shadow-lg"
+                          : "border-gray-300 bg-white hover:border-blue-400 hover:shadow-md"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="mainCompetitor"
+                        value={competitor.id}
+                        checked={mainCompetitorSelection === competitor.id}
+                        onChange={() =>
+                          setMainCompetitorSelection(competitor.id)
+                        }
+                        className="sr-only"
+                      />
+                      <div className="flex flex-col items-center text-center">
+                        {competitor.profileImage ? (
+                          <img
+                            src={competitor.profileImage}
+                            alt={competitor.name}
+                            className="w-24 h-24 rounded-full object-cover mb-3 border border-gray-200 shadow-sm"
+                            onError={(e) => {
+                              e.currentTarget.src =
+                                "https://via.placeholder.com/96x96?text=No+Image";
+                              e.currentTarget.alt = "Image not found";
+                            }}
+                          />
+                        ) : (
+                          <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-lg font-bold mb-3">
+                            No Img
+                          </div>
+                        )}
+                        <h4 className="text-lg font-semibold text-gray-800">
+                          {competitor.name}
+                        </h4>
+                        {competitor.party && (
+                          <p className="text-sm text-gray-600">
+                            {competitor.party}
+                          </p>
+                        )}
+                      </div>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-
+            )}
 
           {otherQuestions.length > 0 && (
             <div className="bg-indigo-50 p-6 rounded-xl shadow-md border border-indigo-200">
               <h3 className="text-2xl font-bold text-indigo-800 mb-6 flex items-center">
-                <HelpCircle className="w-7 h-7 mr-3 text-indigo-600" /> Other Poll Questions
+                <HelpCircle className="w-7 h-7 mr-3 text-indigo-600" /> Other
+                Poll Questions
               </h3>
               {otherQuestions.map((q) => (
-                <div key={q.id} className="mb-8 p-5 bg-white rounded-lg shadow-sm border border-gray-200">
-                  <p className="text-lg font-semibold text-gray-800 mb-4">{q.questionText} </p>
+                <div
+                  key={q.id}
+                  className="mb-8 p-5 bg-white rounded-lg shadow-sm border border-gray-200"
+                >
+                  <p className="text-lg font-semibold text-gray-800 mb-4">
+                    {q.questionText}{" "}
+                  </p>
 
-                  {q.type === 'single-choice' && q.options && (
+                  {q.type === "single-choice" && q.options && (
                     <div className="space-y-3">
                       {q.options.map((option) => (
-                        <label key={option.id} className="flex items-center cursor-pointer">
+                        <label
+                          key={option.id}
+                          className="flex items-center cursor-pointer"
+                        >
                           <input
                             type="radio"
                             name={`question-${q.id}`}
                             value={option.id}
                             checked={selections[q.id] === option.id}
-                            onChange={() => handleDynamicQuestionSelectionChange(q.id, option.id)}
+                            onChange={() =>
+                              handleDynamicQuestionSelectionChange(
+                                q.id,
+                                option.id
+                              )
+                            }
                             className="form-radio h-5 w-5 text-blue-600"
                           />
-                          <span className="ml-3 text-base text-gray-700">{option.optionText}</span>
+                          <span className="ml-3 text-base text-gray-700">
+                            {option.optionText}
+                          </span>
                         </label>
                       ))}
                     </div>
                   )}
 
-                  {q.type === 'open-ended' && (
+                  {q.type === "open-ended" && (
                     <div>
                       <textarea
-                        value={(selections[q.id] as string) || ''}
-                        onChange={(e) => handleDynamicQuestionSelectionChange(q.id, e.target.value)}
+                        value={(selections[q.id] as string) || ""}
+                        onChange={(e) =>
+                          handleDynamicQuestionSelectionChange(
+                            q.id,
+                            e.target.value
+                          )
+                        }
                         placeholder="Type your answer here..."
                         rows={4}
                         className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-800"
@@ -438,19 +540,29 @@ Category: <span className="font-semibold">{pollData.category}</span>
                     </div>
                   )}
 
-                  {q.type === 'yes-no-notsure' && q.options && (
+                  {q.type === "yes-no-notsure" && q.options && (
                     <div className="space-y-3">
                       {q.options.map((option) => (
-                        <label key={option.id} className="flex items-center cursor-pointer">
+                        <label
+                          key={option.id}
+                          className="flex items-center cursor-pointer"
+                        >
                           <input
                             type="radio"
                             name={`question-${q.id}`}
                             value={option.id}
                             checked={selections[q.id] === option.id}
-                            onChange={() => handleDynamicQuestionSelectionChange(q.id, option.id)}
+                            onChange={() =>
+                              handleDynamicQuestionSelectionChange(
+                                q.id,
+                                option.id
+                              )
+                            }
                             className="form-radio h-5 w-5 text-purple-600"
                           />
-                          <span className="ml-3 text-base text-gray-700">{option.optionText}</span>
+                          <span className="ml-3 text-base text-gray-700">
+                            {option.optionText}
+                          </span>
                         </label>
                       ))}
                     </div>
@@ -460,8 +572,7 @@ Category: <span className="font-semibold">{pollData.category}</span>
             </div>
           )}
 
-          {/* Submit Button */}
-          <div className="flex justify-center mt-10">
+              <div className="flex justify-center mt-10">
             <button
               type="submit"
               disabled={submitting}

@@ -22,7 +22,7 @@ export default function Navbar() {
         if (!res.ok) throw new Error(res.statusText);
         const polls: Poll[] = await res.json();
         if (polls.length > 0) {
-          setLatestPollId(polls[0].id); // most recently updated poll
+          setLatestPollId(polls[0].id); 
         }
       } catch (err) {
         console.error("Failed to fetch polls list:", err);

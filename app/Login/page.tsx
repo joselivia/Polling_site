@@ -26,7 +26,7 @@ export default function AdminLogin() {
       const data = await res.json();
       console.log(data);
 
-      if (res.ok) {
+      if (res.ok) { localStorage.setItem("isAdmin","true")
         router.push("/Reports"); 
       } else {
         setError(data.message || "Login failed");

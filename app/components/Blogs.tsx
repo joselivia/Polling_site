@@ -27,7 +27,14 @@ const BlogListPage = () => {
   const { mediaMap, setMedia } = useMediaStore() || { mediaMap: {}, setMedia: () => {} }; 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+ const [isAdmin, setIsAdmin] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
+useEffect(() => {
+  const adminStatus = localStorage.getItem("isAdmin");
+  setIsAdmin(adminStatus === "true");
+  setMounted(true); 
+}, []);
   useEffect(() => {
     const fetchPosts = async () => {
       setLoading(true);
@@ -64,18 +71,21 @@ const BlogListPage = () => {
   }, [mediaMap, setMedia, baseURL]); 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 ">
       <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
         <div className="flex flex-col sm:flex-row justify-between items-center mb-8 pb-4 border-b border-gray-200">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 sm:mb-0 flex items-center">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-4 sm:mb-0 flex items-center">
             <FileText className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" /> Latest Blog Posts
           </h1>
-          <Link
+          {mounted && isAdmin &&(
+    <Link
             href="/BlogPostForm"
-            className="flex items-center px-4 py-2 bg-green-600 text-white font-semibold rounded-full shadow-md hover:bg-green-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 text-sm"
+            className="flex items-center p-2 bg-green-600 text-white font-semibold rounded-full shadow-md hover:bg-green-700 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 text-sm"
           >
             <PlusCircle className="w-4 h-4 mr-2" /> Create New Blog
           </Link>
+          )}
+      
         </div>
 
         {/* Blog Posts List */}

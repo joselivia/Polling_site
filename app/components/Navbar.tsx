@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { FiMenu, FiX } from "react-icons/fi";
+import Image from "next/image";
 
 interface Poll {
   id: number;
@@ -29,8 +30,8 @@ export default function Navbar() {
 
   return (
     <nav className="bg-white dark:bg-gray-900 border-b p-5 sticky top-0 z-50">
-      {/* mobile toggle */}
-      <div className="md:hidden flex justify-between"> <h1 className="text-2xl font-bold text-white">Politrack Africa</h1>
+      <div className="md:hidden flex justify-between">
+        <Image src="/logo.jpg" alt="Politrack Africa Logo" width={100} height={100} />
         <button onClick={toggleSidebar} className="text-2xl">
           {sidebarOpen ? <FiX color="white"/> : <FiMenu color="white" />}
         </button>
@@ -38,7 +39,7 @@ export default function Navbar() {
 
       {/* desktop nav */}
       <div className="hidden md:flex flex items-center justify-between max-w-7xl mx-auto px-4 ">
-          <h1 className="text-2xl font-bold text-white">Politrack Africa</h1>
+            <Image src="/logo.jpg" alt="Politrack Africa Logo" width={150} height={80} />
         <ul className="flex space-x-8 font-medium">
           {navItems.map((item) => (
             <li key={item.label}>

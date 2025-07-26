@@ -21,6 +21,15 @@ const AllPollsPage = () => {
   const [polls, setPolls] = useState<PollSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+const [isAdmin, setIsAdmin] = useState(false);
+const [mounted, setMounted] = useState(false);
+
+useEffect(() => {
+  const adminStatus = localStorage.getItem("isAdmin");
+  setIsAdmin(adminStatus === "true");
+  setMounted(true);
+}, []);
+
 
   useEffect(() => {
     const fetchAllPolls = async () => {
@@ -68,7 +77,7 @@ const AllPollsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8 font-inter">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-2 sm:p-3 lg:p-3 font-inter">
       <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
         <h1 className="text-4xl font-extrabold text-gray-800 mb-8 text-center flex items-center justify-center">
           <List className="mr-3 text-blue-600 w-10 h-10" /> All Available Polls
@@ -112,12 +121,14 @@ const AllPollsPage = () => {
                 </div>
 
                 <div className="mt-4 flex flex-col sm:flex-row gap-3">
-                  <Link
-                    href={`/PollVoting/${poll.id}`}
-                    className="block text-blue-600 font-semibold hover:underline flex-grow text-center py-2 px-3 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
-                  >
-                    View Poll & Vote
-                  </Link>
+              {mounted && isAdmin && (
+    <Link
+      href={`/PollVoting/${poll.id}`}
+      className="block text-blue-600 font-semibold hover:underline flex-grow text-center py-2 px-3 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
+    >
+      View Poll & Vote
+    </Link>
+  )}
                   <Link
                     href={`/PollVotingResults/${poll.id}`} 
                     className="block text-indigo-600 font-semibold hover:underline flex-grow text-center py-2 px-3 border border-indigo-600 rounded-md hover:bg-indigo-50 transition-colors"

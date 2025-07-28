@@ -231,27 +231,56 @@ const PollVotingResultsPage = () => {
                 {/* Render different charts based on question type */}
                 {questionResult.type === 'single-choice' || questionResult.isCompetitorQuestion || questionResult.type === 'yes-no-notsure' ? (
                   questionResult.choices && questionResult.choices.length > 0 ? (
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={questionResult.choices}
-                          dataKey="count"
-                          nameKey="label"
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={100}
-                          fill="#8884d8"
-                          labelLine={false}
-                          label={renderCustomizedLabel}
-                        >
-                          {questionResult.choices.map((entry, index) => (
-                            <Cell key={`cell-${questionResult.questionId}-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
+<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+  {/* Pie Chart */}
+  <div className="w-full h-[300px]">
+    <ResponsiveContainer width="100%" height="100%">
+      <PieChart>
+        <Pie
+          data={questionResult.choices}
+          dataKey="count"
+          nameKey="label"
+          cx="50%"
+          cy="50%"
+          outerRadius={100}
+          fill="#8884d8"
+          labelLine={false}
+          label={renderCustomizedLabel}
+        >
+          {questionResult.choices.map((entry, index) => (
+            <Cell key={`cell-${questionResult.questionId}-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  </div>
+
+  {/* Bar Chart */}
+<div className="w-full h-[300px]">
+  <ResponsiveContainer width="100%" height="100%">
+    <RechartsBarChart
+      data={questionResult.choices}
+      margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+    >
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="label" />
+      <YAxis />
+      <Tooltip />
+      <Legend />
+      <Bar dataKey="count">
+        {questionResult.choices.map((entry, index) => (
+          <Cell key={`bar-cell-${index}`} fill={COLORS[index % COLORS.length]} />
+        ))}
+      </Bar>
+    </RechartsBarChart>
+  </ResponsiveContainer>
+</div>
+
+</div>
+
+
                   ) : (
                     <p className="text-gray-500">No choices recorded for this question yet.</p>
                   )

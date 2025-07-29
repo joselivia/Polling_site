@@ -27,7 +27,6 @@ const CreatePoll = () => {
   const counties = region ? regionCountyMap[region] : [];
   const constituencies = county ? countyConstituencyMap[county] : [];
   const wards = constituency ? countyAssemblyWardMap[constituency] : [];
-
   const showPresidentialExecutive = category === "Presidential";
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,8 +52,8 @@ const CreatePoll = () => {
       presidential: showPresidentialExecutive ? presidential : null,
       region,
       county,
-      constituency,
-      ward,
+      constituency:constituency || null,
+      ward:ward || null,
     };
 
     try {
@@ -218,7 +217,7 @@ const CreatePoll = () => {
 
             <div>
               <label htmlFor="constituency" className="block text-sm font-medium text-gray-700 mb-2">
-                Constituency <span className="text-red-500">*</span>
+                Constituency 
               </label>
               <select
                 id="constituency"
@@ -229,8 +228,7 @@ const CreatePoll = () => {
                 }}
                 disabled={!county}
                 className={`w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white ${!county ? 'opacity-60 cursor-not-allowed' : ''}`}
-                required
-              >
+                  >
                 <option value="" disabled>Select Constituency</option>
                 {constituencies.map((constituency) => (
                   <option key={constituency} value={constituency}>
@@ -242,7 +240,7 @@ const CreatePoll = () => {
 
             <div>
               <label htmlFor="ward" className="block text-sm font-medium text-gray-700 mb-2">
-                Ward <span className="text-red-500">*</span>
+                Ward 
               </label>
               <select
                 id="ward"
@@ -250,8 +248,7 @@ const CreatePoll = () => {
                 onChange={(e) => setWard(e.target.value)}
                 disabled={!constituency}
                 className={`w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white ${!constituency ? 'opacity-60 cursor-not-allowed' : ''}`}
-                required
-              >
+                 >
                 <option value="" disabled>Select Ward</option>
                 {wards.map((ward) => (
                   <option key={ward} value={ward}>

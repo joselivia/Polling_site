@@ -123,13 +123,7 @@ const PollVotingPage = () => {
     setMessage(null);
     setError(null);
 
-    if (!respondentName.trim() || !respondentAge || !respondentGender) {
-      setError("Please fill in all respondent details (Name, Age, Gender).");
-      setSubmitting(false);
-      return;
-    }
-
-    if (!pollData) {
+     if (!pollData) {
       setError("Poll data not loaded.");
       setSubmitting(false);
       return;
@@ -355,7 +349,7 @@ const PollVotingPage = () => {
                 htmlFor="name"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Name: <span className="text-red-500">*</span>
+                Name: 
               </label>
               <input
                 type="text"
@@ -365,15 +359,14 @@ const PollVotingPage = () => {
                 }
                 placeholder="Enter Name"
                 className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
-                required
-              />
+                  />
             </div>
             <div>
               <label
                 htmlFor="respondent-gender"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Gender <span className="text-red-500">*</span>
+                Gender 
               </label>
               <select
                 id="respondent-gender"
@@ -382,8 +375,7 @@ const PollVotingPage = () => {
                   setRespondentGender(e.target.value)
                 }
                 className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
-                required
-              >
+                            >
                 <option value="" disabled>
                   Select Gender
                 </option>
@@ -399,7 +391,7 @@ const PollVotingPage = () => {
                 htmlFor="respondent-age"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Age <span className="text-red-500">*</span>
+                Age 
               </label>
               <select
                 id="respondent-age"
@@ -408,7 +400,7 @@ const PollVotingPage = () => {
                   setRespondentAge(e.target.value)
                 }
                 className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
-                required
+            
               >
                 <option value="" disabled>
                   Select Age

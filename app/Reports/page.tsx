@@ -3,12 +3,6 @@ import React, { useEffect, useState } from "react";
 import BlogListPage from "../components/Blogs";
 import AllPollsPage from "../components/AllPollsPage";
 
-export interface PollSummary {
-  id: number;
-  title: string;
-  lastUpdated: Date | string;
-}
-
 export default function HomePage() {
  const [isAdmin, setIsAdmin] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -22,7 +16,7 @@ const handleLogout = () => {
   localStorage.removeItem("isAdmin");
   window.location.href = "/"; 
 };
-
+ 
   return (
     <div className="max-w-full mx-auto ">
       <div className="flex flex-col lg:flex-row gap-8">
@@ -54,7 +48,7 @@ const handleLogout = () => {
             </div>
 
           </div>
-           < AllPollsPage />      
+           < AllPollsPage />    
         </div>
 
       </div>

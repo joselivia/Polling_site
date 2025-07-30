@@ -17,6 +17,7 @@ interface PollSummary {
   created_at: string;
 }
 
+
 const AllPollsPage = () => {
   const [polls, setPolls] = useState<PollSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,8 +41,9 @@ useEffect(() => {
           throw new Error(errorData.message || "Failed to fetch polls.");
         }
         const data: PollSummary[] = await response.json();
-        setPolls(data);
-      } catch (err: any) {
+setPolls(data);
+
+            } catch (err: any) {
         setError(err.message || "An unknown error occurred while fetching polls.");
       } finally {
         setLoading(false);
@@ -111,7 +113,7 @@ useEffect(() => {
                   <div className="text-sm text-gray-500 space-y-1">
                     <p className="flex items-center">
                       <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                      {poll.ward || 'N/A'}, {poll.constituency || 'N/A'}, {poll.county}
+                      Ward:{poll.ward || 'N/A'}, Const:{poll.constituency || 'N/A'}, County:{poll.county}
                     </p>
                     <p className="flex items-center">
                       <CalendarDays className="w-4 h-4 mr-2 text-gray-400" />

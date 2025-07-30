@@ -22,13 +22,14 @@ const AllApirantPollPage = () => {
   useEffect(() => {
     const fetchAllPolls = async () => {
       try {
-        const response = await fetch(`${baseURL}/api/polls`); 
+        const response = await fetch(`${baseURL}/aspirant`); 
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || "Failed to fetch polls.");
         }
-        const data: PollData[] = await response.json();
-        setPolls(data);
+const data: PollData[] = await response.json();
+setPolls(data);
+
       } catch (err: any) {
         setError(err.message || "An unknown error occurred while fetching polls.");
       } finally {
@@ -84,8 +85,8 @@ const AllApirantPollPage = () => {
                   </p>
                   <div className="text-sm text-gray-500 space-y-1">
                     <p className="flex items-center">
-                      <MapPin className="w-4 h-4 mr-2 text-gray-400" />
-                      {poll.ward || 'N/A'}, {poll.constituency || 'N/A'}, {poll.county}
+                      <MapPin className="w-4 h-4 mr-2 text-gray-400" />                      
+                      Ward:{poll.ward || 'N/A'}, Const:{poll.constituency || 'N/A'}, County:{poll.county || 'N/A'}
                     </p>
                     <p className="flex items-center">
                       <CalendarDays className="w-4 h-4 mr-2 text-gray-400" />

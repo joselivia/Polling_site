@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { FiMenu, FiX } from "react-icons/fi";
 import Image from "next/image";
@@ -11,7 +11,6 @@ export default function Navbar() {
   const navItems = [
     { label: "Home", href: "/" },
     { label: "Live Reports", href: "/Reports" },
-    { label: "Live Votes", href: "/fullvotes" },
     {
       label: "Login",
       href: "/Login",

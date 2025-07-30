@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import useSWR from "swr";
 
-interface Candidate {
+export interface Candidate {
   id: number;
   name: string;
   profile?: string;
@@ -38,9 +38,10 @@ interface Candidate {
   percentage: string;
 }
 
-interface PollData {
+export interface PollData {
   id: number;
   title: string;
+  presidential:string;
   category?: string;
   region: string;
   county?: string;
@@ -133,6 +134,10 @@ const FullPollDetails = ({ id }: { id?: number }) => {
             <BarChart2 className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" />
             {data.title || "Poll Details"}
           </h1>
+            <p className="text-gray-600 text-base sm:text-lg font-medium mb-1 flex items-center justify-center">
+            <Info className="w-4 h-4 mr-2 text-gray-500" />
+            Presidential Executive: <span className="font-semibold ml-1">{data.presidential || "N/A"}</span>
+          </p>
           <p className="text-gray-600 text-base sm:text-lg font-medium mb-1 flex items-center justify-center">
             <Info className="w-4 h-4 mr-2 text-gray-500" />
             Category: <span className="font-semibold ml-1">{data.category || "N/A"}</span>

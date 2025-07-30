@@ -15,10 +15,10 @@ interface PollData {
   pollTitle: string;
   totalVotes: number;
   results: Candidate[];
-  lastUpdated: Date | string;
+  created_at: Date | string;
 }
 
-const VoteInterface = ({ pollId }: { pollId: number }) => {
+const VoteInterface = ({ id }: { id: number }) => {
   const [data, setData] = useState<PollData | null>(null);
   const [selectedCandidateId, setSelectedCandidateId] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -26,7 +26,7 @@ const VoteInterface = ({ pollId }: { pollId: number }) => {
 
   useEffect(() => {
     const fetchData = () => {
-      axios.get(`${baseURL}/api/polls/${pollId}`)
+      axios.get(`${baseURL}/aspirant/${id}`)
         .then(res => {
           console.log('API Response:', res.data);
           setData(res.data as PollData);
@@ -36,7 +36,7 @@ const VoteInterface = ({ pollId }: { pollId: number }) => {
     fetchData();
     const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval); 
-  }, [pollId]);
+  }, [id]);
 
   const handleVote = async () => {
     if (!selectedCandidateId || !data) return;
@@ -44,7 +44,7 @@ const VoteInterface = ({ pollId }: { pollId: number }) => {
     setIsVoting(true);
     try {
       const response = await axios.post(`${baseURL}/api/votes`, {
-        pollId,
+        id,
         competitorId: selectedCandidateId,
       });
       if (response.status === 200) {
@@ -71,7 +71,7 @@ const VoteInterface = ({ pollId }: { pollId: number }) => {
           Total Votes: {data.totalVotes.toLocaleString()}
         </p>
         <p className="text-sm text-gray-500">
-          Last Updated: {new Date(data.lastUpdated).toLocaleString('en-US', { timeZone: 'EAT' })}
+          Last Updated: {new Date(data. created_at).toLocaleString('en-US', { timeZone: 'EAT' })}
         </p>
         <div className="mt-4 space-y-2">
           {data.results.map((candidate) => (

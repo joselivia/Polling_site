@@ -52,7 +52,7 @@ const BlogPostForm = () => {
         setMedia([]);
         setPreviewUrls([]);
         setTimeout(() => {
-          router.push("/");
+          router.push("/BlogPostForm/BlogList");
         }, 1000);
       }
     } catch (err) {

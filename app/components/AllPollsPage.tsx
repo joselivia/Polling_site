@@ -80,7 +80,7 @@ setPolls(data);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-2 sm:p-3 lg:p-3 font-inter">
-      <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
+      <div className=" mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
         <h1 className="text-4xl font-extrabold text-gray-800 mb-8 text-center flex items-center justify-center">
           <List className="mr-3 text-blue-600 w-10 h-10" /> All Available Polls
         </h1>

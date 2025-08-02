@@ -101,7 +101,7 @@ const BlogDetailsPage = () => {
   if (!post) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="flex flex-col items-center p-8 bg-white rounded-xl shadow-lg text-gray-600">
+        <div className="flex flex-col items-center p-3 bg-white rounded-xl shadow-lg text-gray-600">
           <Info className="w-12 h-12 mb-4" />
           <p className="text-lg font-medium">Blog post not found.</p>
         </div>
@@ -111,7 +111,7 @@ const BlogDetailsPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
+      <div className=" mx-auto bg-white shadow-xl rounded-2xl p-2 sm:p-8 border border-gray-200">
         {/* Blog Post Header */}
         <div className="mb-8 pb-4 border-b border-gray-200 text-center">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3 leading-tight">

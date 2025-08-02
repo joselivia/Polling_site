@@ -21,60 +21,109 @@ import {
   Newspaper,
   Download,
   ArrowRight,
+  Menu,
+  X,
 } from "lucide-react";
 
-
 export const CompanyPage = () => {
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-inter antialiased">
-       <section
+      <header className="bg-white shadow-sm fixed top-14 w-full z-50">
+        <div className="container mx-auto px-6 flex justify-between items-center">
+          <nav className="hidden md:flex space-x-6">
+            {[
+              "home",
+              "about",
+              "services",
+              "case-studies",
+              "resources",
+              "contact",
+            ].map((section) => (
+              <a
+                key={section}
+                onClick={() => scrollToSection(section)}
+                className="text-gray-600 hover:text-indigo-700 font-medium cursor-pointer px-3 py-2"
+              >
+                {section
+                  .replace("-", " ")
+                  .replace(/\b\w/g, (l) => l.toUpperCase())}
+              </a>
+            ))}
+          </nav>
+   </div>
+      </header>
+      <section
         id="home"
         className="py-20 md:py-28 bg-gradient-to-r from-green-700 to-indigo-700 text-white rounded-b-lg shadow-lg"
       >
         <div className="container mx-auto px-4 text-center">
-          {/* Headline */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 animate-fade-in-up">
-            Decoding Africa’s Pulse: Data-Driven Insights for Political & Socio-Economic
-            Strategy
+            Decoding Africa’s Pulse: Data-Driven Insights for Political &
+            Socio-Economic Strategy
           </h1>
           {/* Subheading */}
           <p className="text-lg md:text-xl mb-8 opacity-90 max-w-3xl mx-auto animate-fade-in-up delay-100">
-            Politrack Africa empowers leaders with cutting-edge opinion polling, research,
-            and strategic advisory services tailored to Africa’s complex political and
-            socio‑economic landscape.
+            Politrack Africa empowers leaders with cutting-edge opinion polling,
+            research, and strategic advisory services tailored to Africa’s
+            complex political and socio‑economic landscape.
           </p>
           {/* Key Value Proposition */}
           <blockquote className="relative p-6 bg-white/10 rounded-xl border border-white/20 mb-12 italic text-lg md:text-xl max-w-4xl mx-auto shadow-inner animate-fade-in-up delay-200">
-            <span className="absolute -top-4 -left-2 text-6xl opacity-30 select-none">“</span>
-            In a continent of diverse voices and rapid change, we turn nuanced public
-            sentiment into actionable intelligence. Trusted by governments, NGOs, and
-            enterprises to navigate Africa’s future with confidence.
-            <span className="absolute -bottom-4 -right-2 text-6xl opacity-30 select-none">”</span>
+            <span className="absolute -top-4 -left-2 text-6xl opacity-30 select-none">
+              “
+            </span>
+            In a continent of diverse voices and rapid change, we turn nuanced
+            public sentiment into actionable intelligence. Trusted by
+            governments, NGOs, and enterprises to navigate Africa’s future with
+            confidence.
+            <span className="absolute -bottom-4 -right-2 text-6xl opacity-30 select-none">
+              ”
+            </span>
           </blockquote>
 
           {/* Services Snapshot */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             {[
               {
-                icon: <Users size={40} className="mx-auto mb-3 text-yellow-400" />,
+                icon: (
+                  <Users size={40} className="mx-auto mb-3 text-yellow-400" />
+                ),
                 title: "Political Polling",
                 desc: "Election forecasting, voter behavior & policy approval ratings.",
                 delay: "delay-300",
               },
               {
-                icon: <BarChart size={40} className="mx-auto mb-3 text-yellow-400" />,
+                icon: (
+                  <BarChart
+                    size={40}
+                    className="mx-auto mb-3 text-yellow-400"
+                  />
+                ),
                 title: "Socio-Economic Research",
                 desc: "Public perception on poverty, governance, climate, and inclusion.",
                 delay: "delay-400",
               },
               {
-                icon: <Target size={40} className="mx-auto mb-3 text-yellow-400" />,
+                icon: (
+                  <Target size={40} className="mx-auto mb-3 text-yellow-400" />
+                ),
                 title: "Strategic Advisory",
                 desc: "Evidence-based campaigns, policy design, and risk mitigation.",
                 delay: "delay-500",
               },
               {
-                icon: <Globe size={40} className="mx-auto mb-3 text-yellow-400" />,
+                icon: (
+                  <Globe size={40} className="mx-auto mb-3 text-yellow-400" />
+                ),
                 title: "Pan‑African Coverage",
                 desc: "Fieldwork across 25+ countries, local-language capabilities.",
                 delay: "delay-600",
@@ -94,8 +143,8 @@ export const CompanyPage = () => {
           {/* Featured Insight */}
           <div className="bg-white text-gray-800 p-8 rounded-xl shadow-2xl max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 animate-fade-in-up delay-700">
             <p className="text-lg font-semibold text-center md:text-left">
-              "78% of urban youth in 5 African nations prioritize economic opportunity over
-              ideological loyalty in 2024 elections."
+              "78% of urban youth in 5 African nations prioritize economic
+              opportunity over ideological loyalty in 2024 elections."
             </p>
             <a
               href="#"
@@ -107,8 +156,6 @@ export const CompanyPage = () => {
           </div>
         </div>
       </section>
-
-
       <section id="about" className="py-20 md:py-28 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl md:text-5xl font-extrabold text-center mb-12 text-indigo-800 animate-fade-in-up">
@@ -118,33 +165,43 @@ export const CompanyPage = () => {
             {/* Left Column */}
             <div className="space-y-8 animate-fade-in-left">
               <p className="text-lg leading-relaxed text-gray-700">
-                <span className="text-2xl font-bold text-green-700">Our Mission:</span> To
-                amplify Africa’s voices through rigorous, ethical research that informs
-                transformative decisions.
+                <span className="text-2xl font-bold text-green-700">
+                  Our Mission:
+                </span>{" "}
+                To amplify Africa’s voices through rigorous, ethical research
+                that informs transformative decisions.
               </p>
-              <h3 className="text-3xl font-bold text-indigo-700 mb-6">Why Politrack?</h3>
+              <h3 className="text-3xl font-bold text-indigo-700 mb-6">
+                Why Politrack?
+              </h3>
               <ul className="space-y-4 text-gray-700">
                 {[
                   {
-                    text:
-                      "Local Expertise: 90% of our researchers are Africa-based, with deep contextual understanding.",
+                    text: "Local Expertise: 90% of our researchers are Africa-based, with deep contextual understanding.",
                   },
                   {
-                    text:
-                      "Methodological Rigor: Mixed‑method approaches (CATI, face‑to‑face, mobile surveys) adapted to local realities.",
+                    text: "Methodological Rigor: Mixed‑method approaches (CATI, face‑to‑face, mobile surveys) adapted to local realities.",
                   },
                   {
-                    text:
-                      "Non‑Partisan Integrity: ISO 20252 certified. Independent. Truth above all.",
+                    text: "Non‑Partisan Integrity: ISO 20252 certified. Independent. Truth above all.",
                   },
                   {
-                    text:
-                      "Innovation Hub: AI‑driven sentiment analysis, geospatial polling, and real‑time dashboards.",
+                    text: "Innovation Hub: AI‑driven sentiment analysis, geospatial polling, and real‑time dashboards.",
                   },
                 ].map(({ text }) => (
                   <li key={text} className="flex items-start gap-3">
-                    <CheckCircle className="flex-shrink-0 mt-1 text-green-600" size={20} />
-                    <span dangerouslySetInnerHTML={{ __html: text.replace(/(.*?):/, '<strong class="text-indigo-600">$1:</strong>') }} />
+                    <CheckCircle
+                      className="flex-shrink-0 mt-1 text-green-600"
+                      size={20}
+                    />
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: text.replace(
+                          /(.*?):/,
+                          '<strong class="text-indigo-600">$1:</strong>'
+                        ),
+                      }}
+                    />
                   </li>
                 ))}
               </ul>
@@ -162,19 +219,22 @@ export const CompanyPage = () => {
                 }}
               />
               <blockquote className="italic text-lg text-gray-700 border-l-4 border-green-600 pl-4">
-                Guided 3 national governments in designing post‑COVID recovery policies with 92%
-                public approval. Predicted 7/7 major electoral outcomes in 2023.
+                Guided 3 national governments in designing post‑COVID recovery
+                policies with 92% public approval. Predicted 7/7 major electoral
+                outcomes in 2023.
               </blockquote>
               <p className="mt-4 text-sm text-gray-500">
-                <span className="font-semibold">Impact Spotlight:</span> Our commitment to
-                actionable intelligence.
+                <span className="font-semibold">Impact Spotlight:</span> Our
+                commitment to actionable intelligence.
               </p>
             </div>
           </div>
         </div>
       </section>
-
-      <section id="services" className="py-20 md:py-28 bg-indigo-700 text-white rounded-t-lg shadow-lg">
+      <section
+        id="services"
+        className="py-20 md:py-28 bg-indigo-700 text-white rounded-t-lg shadow-lg"
+      >
         <div className="container mx-auto px-4">
           <h2 className="text-4xl md:text-5xl font-extrabold text-center mb-16 animate-fade-in-up">
             Our Services
@@ -224,15 +284,23 @@ export const CompanyPage = () => {
               >
                 <div className="flex items-center mb-4">
                   {icon}
-                  <h3 className="text-2xl font-bold text-indigo-700">{title}</h3>
+                  <h3 className="text-2xl font-bold text-indigo-700">
+                    {title}
+                  </h3>
                 </div>
                 <ul className="list-disc list-inside space-y-2 text-gray-700 mb-6">
                   {list.map((item) => (
-                    <li key={item} dangerouslySetInnerHTML={{ __html: item.replace(/^(.*?):/, '<strong>$1:</strong>') }} />
+                    <li
+                      key={item}
+                      dangerouslySetInnerHTML={{
+                        __html: item.replace(/^(.*?):/, "<strong>$1:</strong>"),
+                      }}
+                    />
                   ))}
                 </ul>
                 <p className="italic text-sm text-gray-600 border-l-4 border-green-600 pl-3">
-                  <strong className="text-green-700">Client Use Case:</strong> {useCase}
+                  <strong className="text-green-700">Client Use Case:</strong>{" "}
+                  {useCase}
                 </p>
               </div>
             ))}
@@ -240,27 +308,28 @@ export const CompanyPage = () => {
 
           {/* Methodology Highlights */}
           <div className="mt-20 text-center animate-fade-in-up delay-400">
-            <h3 className="text-3xl font-bold mb-8 text-yellow-400">Methodology Highlights</h3>
+            <h3 className="text-3xl font-bold mb-8 text-yellow-400">
+              Methodology Highlights
+            </h3>
             <div className="flex flex-col md:flex-row justify-center items-center gap-8 text-lg">
               {[
                 {
                   icon: <TrendingUp size={28} className="text-yellow-400" />,
-                  label:`Sample sizes:1,200 – 5,000 respondents per national study`
-                  
+                  label: `Sample sizes:1,200 – 5,000 respondents per national study`,
                 },
                 {
                   icon: <Shield size={28} className="text-yellow-400" />,
-                  label:'Margin of error: ±2 – 3% at 95% confidence level'
-                   
-                 
+                  label: "Margin of error: ±2 – 3% at 95% confidence level",
                 },
                 {
                   icon: <Globe size={28} className="text-yellow-400" />,
-                  label: 'Languages: 30+ African languages supported'
-                 
+                  label: "Languages: 30+ African languages supported",
                 },
-              ].map(({ icon, label },index) => (
-                <div key={index} className="p-6 bg-white/15 rounded-xl shadow-lg flex items-center gap-3">
+              ].map(({ icon, label }, index) => (
+                <div
+                  key={index}
+                  className="p-6 bg-white/15 rounded-xl shadow-lg flex items-center gap-3"
+                >
                   {icon}
                   <span>{label}</span>
                 </div>
@@ -269,7 +338,6 @@ export const CompanyPage = () => {
           </div>
         </div>
       </section>
-
       <section id="case-studies" className="py-20 md:py-28 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl md:text-5xl font-extrabold text-center mb-16 text-indigo-800 animate-fade-in-up">
@@ -278,18 +346,21 @@ export const CompanyPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Nigeria */}
             <div className="bg-white p-8 rounded-xl shadow-2xl border-t-4 border-green-600 transform hover:scale-105 transition duration-300 animate-fade-in-left">
-              <h3 className="text-2xl font-bold text-indigo-700 mb-4">1. Electoral Turnaround in Nigeria (2023)</h3>
+              <h3 className="text-2xl font-bold text-indigo-700 mb-4">
+                1. Electoral Turnaround in Nigeria (2023)
+              </h3>
               <p className="mb-4 text-gray-700">
-                <strong className="text-green-700">Challenge:</strong> Client trailed by 15
-                points 6 months pre‑election.
+                <strong className="text-green-700">Challenge:</strong> Client
+                trailed by 15 points 6 months pre‑election.
               </p>
               <p className="mb-4 text-gray-700">
-                <strong className="text-green-700">Our Role:</strong> Identified unaddressed
-                grievances in 3 swing states via granular sentiment mapping.
+                <strong className="text-green-700">Our Role:</strong> Identified
+                unaddressed grievances in 3 swing states via granular sentiment
+                mapping.
               </p>
               <p className="mb-4 text-gray-700">
-                <strong className="text-green-700">Outcome:</strong> Data‑driven grassroots
-                strategy led to 8‑point swing and victory.
+                <strong className="text-green-700">Outcome:</strong> Data‑driven
+                grassroots strategy led to 8‑point swing and victory.
               </p>
               <img
                 src="https://placehold.co/600x300/4B0082/ffffff?text=Data+Viz+Map+Nigeria"
@@ -304,18 +375,20 @@ export const CompanyPage = () => {
 
             {/* Rwanda */}
             <div className="bg-white p-8 rounded-xl shadow-2xl border-t-4 border-indigo-600 transform hover:scale-105 transition duration-300 animate-fade-in-right">
-              <h3 className="text-2xl font-bold text-indigo-700 mb-4">2. Gender Policy Reform in Rwanda</h3>
+              <h3 className="text-2xl font-bold text-indigo-700 mb-4">
+                2. Gender Policy Reform in Rwanda
+              </h3>
               <p className="mb-4 text-gray-700">
-                <strong className="text-green-700">Challenge:</strong> Government sought
-                evidence to strengthen women’s land rights.
+                <strong className="text-green-700">Challenge:</strong>{" "}
+                Government sought evidence to strengthen women’s land rights.
               </p>
               <p className="mb-4 text-gray-700">
-                <strong className="text-green-700">Our Role:</strong> Nationwide perception
-                study + traditional leader engagement analysis.
+                <strong className="text-green-700">Our Role:</strong> Nationwide
+                perception study + traditional leader engagement analysis.
               </p>
               <p className="mb-4 text-gray-700">
-                <strong className="text-green-700">Outcome:</strong> Informed legislation
-                passed with 76% public support.
+                <strong className="text-green-700">Outcome:</strong> Informed
+                legislation passed with 76% public support.
               </p>
               <img
                 src="https://placehold.co/600x300/388E3C/ffffff?text=Researchers+in+Fieldwork"
@@ -330,7 +403,6 @@ export const CompanyPage = () => {
           </div>
         </div>
       </section>
-
       {/* ————————————————— RESOURCES ————————————————— */}
       <section
         id="resources"
@@ -346,7 +418,9 @@ export const CompanyPage = () => {
             <div className="bg-white text-gray-800 p-8 rounded-xl shadow-2xl transform hover:scale-105 transition duration-300 animate-fade-in-left">
               <div className="flex items-center mb-6">
                 <BookOpen className="text-indigo-700 mr-3" size={32} />
-                <h3 className="text-2xl font-bold text-indigo-700">Latest Reports</h3>
+                <h3 className="text-2xl font-bold text-indigo-700">
+                  Latest Reports
+                </h3>
               </div>
               <ul className="space-y-4 text-gray-700">
                 {[
@@ -368,7 +442,9 @@ export const CompanyPage = () => {
             <div className="bg-white text-gray-800 p-8 rounded-xl shadow-2xl transform hover:scale-105 transition duration-300 animate-fade-in-right">
               <div className="flex items-center mb-6">
                 <Newspaper className="text-indigo-700 mr-3" size={32} />
-                <h3 className="text-2xl font-bold text-indigo-700">Blog Headlines</h3>
+                <h3 className="text-2xl font-bold text-indigo-700">
+                  Blog Headlines
+                </h3>
               </div>
               <ul className="space-y-4 text-gray-700">
                 {[
@@ -388,7 +464,6 @@ export const CompanyPage = () => {
           </div>
         </div>
       </section>
-
       {/* ————————————————— CONTACT ————————————————— */}
       <section id="contact" className="py-20 md:py-28 bg-gray-50">
         <div className="container mx-auto px-4 text-center">
@@ -403,7 +478,9 @@ export const CompanyPage = () => {
             {/* Offices */}
             <div className="bg-white p-8 rounded-xl shadow-2xl transform hover:scale-105 transition duration-300 animate-fade-in-left">
               <MapPin className="text-green-700 mb-4 mx-auto" size={40} />
-              <h3 className="text-2xl font-bold text-indigo-700 mb-4">Our Offices</h3>
+              <h3 className="text-2xl font-bold text-indigo-700 mb-4">
+                Our Offices
+              </h3>
               <ul className="text-gray-700 space-y-2">
                 <li>
                   <strong>Headquarters:</strong> Nairobi, Kenya
@@ -420,11 +497,16 @@ export const CompanyPage = () => {
             {/* Get in touch */}
             <div className="bg-white p-8 rounded-xl shadow-2xl transform hover:scale-105 transition duration-300 animate-fade-in-right">
               <Mail className="text-green-700 mb-4 mx-auto" size={40} />
-              <h3 className="text-2xl font-bold text-indigo-700 mb-4">Get In Touch</h3>
+              <h3 className="text-2xl font-bold text-indigo-700 mb-4">
+                Get In Touch
+              </h3>
               <ul className="text-gray-700 space-y-2">
                 <li className="flex items-center justify-center gap-2">
                   <Phone size={20} className="text-indigo-600" />
-                  <a href="tel:+254700123456" className="hover:text-indigo-700 transition">
+                  <a
+                    href="tel:+254700123456"
+                    className="hover:text-indigo-700 transition"
+                  >
                     +254 700 123 456
                   </a>
                 </li>
@@ -438,39 +520,43 @@ export const CompanyPage = () => {
                   </a>
                 </li>
               </ul>
-              {/* <div className="mt-8 flex flex-col space-y-4">
-                <button className="w-full bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-indigo-800 transition">
-                  Request Proposal
-                </button>
-                <button className="w-full bg-green-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-800 transition">
-                  Subscribe to Insights Newsletter
-                </button>
-              </div> */}
             </div>
           </div>
         </div>
       </section>
-
-        <footer className="bg-indigo-900 text-white py-12 rounded-t-lg shadow-inner">
+      <footer className="bg-indigo-900 text-white py-12 rounded-t-lg shadow-inner">
         <div className="container mx-auto px-4 text-center">
           <p className="text-xl font-semibold mb-6">
             Politrack Africa: Where Numbers Meet Narrative.
           </p>
           <div className="flex justify-center space-x-6 mb-6">
-            <a href="#" aria-label="Twitter" className="hover:text-yellow-400 transition">
+            <a
+              href="#"
+              aria-label="Twitter"
+              className="hover:text-yellow-400 transition"
+            >
               <Twitter size={28} />
             </a>
-            <a href="#" aria-label="LinkedIn" className="hover:text-yellow-400 transition">
+            <a
+              href="#"
+              aria-label="LinkedIn"
+              className="hover:text-yellow-400 transition"
+            >
               <Linkedin size={28} />
             </a>
-            <a href="#" aria-label="YouTube" className="hover:text-yellow-400 transition">
+            <a
+              href="#"
+              aria-label="YouTube"
+              className="hover:text-yellow-400 transition"
+            >
               <Youtube size={28} />
             </a>
           </div>
-          <p className="text-sm opacity-75">© {new Date().getFullYear()} Politrack Africa. All rights reserved.</p>
+          <p className="text-sm opacity-75">
+            © {new Date().getFullYear()} Politrack Africa. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>
   );
 };
-

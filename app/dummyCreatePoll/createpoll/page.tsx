@@ -22,6 +22,7 @@ const CreatePoll = () => {
   const [ward, setWard] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [expiry, setExpiry] = useState<string | null>(null);
   const router = useRouter();
 
   const counties = region ? regionCountyMap[region] : [];
@@ -39,21 +40,30 @@ const CreatePoll = () => {
       !title ||
       !category ||
       !region ||
-          (showPresidentialExecutive && !presidential)
+      (showPresidentialExecutive && !presidential)
     ) {
       setMessage("❌ Please fill in all required poll details.");
       setSubmitting(false);
       return;
     }
-
+    let expiryTimestamp: string | null = null;
+    if (expiry) {
+      const now = new Date();
+      const hours = parseInt(expiry);
+      if (!isNaN(hours)) {
+        now.setHours(now.getHours() + hours);
+        expiryTimestamp = now.toISOString();
+      }
+    }
     const payload = {
       title,
       category,
       presidential: showPresidentialExecutive ? presidential : null,
       region,
       county,
-      constituency:constituency || null,
-      ward:ward || null,
+      constituency: constituency || null,
+      ward: ward || null,
+      voting_expires_at: expiryTimestamp,
     };
 
     try {
@@ -68,7 +78,9 @@ const CreatePoll = () => {
       if (response.ok) {
         const result = await response.json();
         const pollId = result.id;
-        setMessage("✅ Poll created successfully! Redirecting to add survey questions...");
+        setMessage(
+          "✅ Poll created successfully! Redirecting to add survey questions..."
+        );
         setTitle("");
         setPresidential("");
         setCategory("");
@@ -76,12 +88,17 @@ const CreatePoll = () => {
         setCounty("");
         setConstituency("");
         setWard("");
+        setExpiry(null);
         setTimeout(() => {
           router.push(`/dummyCreatePoll/CreateQuiz?pollId=${pollId}`);
         }, 1500);
       } else {
         const errorData = await response.json();
-        setMessage(`❌ Failed to create poll: ${errorData.message || response.statusText}`);
+        setMessage(
+          `❌ Failed to create poll: ${
+            errorData.message || response.statusText
+          }`
+        );
       }
     } catch (error) {
       console.error("❌ Submission error:", error);
@@ -95,14 +112,18 @@ const CreatePoll = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
       <div className="max-w-8xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
         <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 sm:mb-0 flex items-center">
-          <Megaphone className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" /> Create New Poll
+          <Megaphone className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" />{" "}
+          Create New Poll
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Poll Details Section */}
           <div className="space-y-6">
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="title"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Poll Title <span className="text-red-500">*</span>
               </label>
               <input
@@ -115,7 +136,10 @@ const CreatePoll = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Category <span className="text-red-500">*</span>
                 </label>
                 <select
@@ -130,7 +154,9 @@ const CreatePoll = () => {
                   className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
                   required
                 >
-                  <option value="" disabled>Select a category</option>
+                  <option value="" disabled>
+                    Select a category
+                  </option>
                   {CATEGORY_OPTIONS.map((option) => (
                     <option key={option} value={option}>
                       {option}
@@ -141,8 +167,12 @@ const CreatePoll = () => {
 
               {showPresidentialExecutive && (
                 <div>
-                  <label htmlFor="presidential" className="block text-sm font-medium text-gray-700 mb-2">
-                    Presidential Executive <span className="text-red-500">*</span>
+                  <label
+                    htmlFor="presidential"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Presidential Executive{" "}
+                    <span className="text-red-500">*</span>
                   </label>
                   <select
                     id="presidential"
@@ -151,7 +181,9 @@ const CreatePoll = () => {
                     className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
                     required
                   >
-                    <option value="" disabled>Select category</option>
+                    <option value="" disabled>
+                      Select category
+                    </option>
                     {Presidential_category.map((option) => (
                       <option key={option} value={option}>
                         {option}
@@ -166,7 +198,10 @@ const CreatePoll = () => {
           {/* Location Details */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div>
-              <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="region"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Region <span className="text-red-500">*</span>
               </label>
               <select
@@ -181,7 +216,9 @@ const CreatePoll = () => {
                 className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white"
                 required
               >
-                <option value="" disabled>Select region</option>
+                <option value="" disabled>
+                  Select region
+                </option>
                 {Object.keys(regionCountyMap).map((reg) => (
                   <option key={reg} value={reg}>
                     {reg}
@@ -191,7 +228,10 @@ const CreatePoll = () => {
             </div>
 
             <div>
-              <label htmlFor="county" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="county"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 County <span className="text-red-500">*</span>
               </label>
               <select
@@ -203,10 +243,14 @@ const CreatePoll = () => {
                   setWard("");
                 }}
                 disabled={!region}
-                className={`w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white ${!region ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white ${
+                  !region ? "opacity-60 cursor-not-allowed" : ""
+                }`}
                 required
               >
-                <option value="" disabled>Select county</option>
+                <option value="" disabled>
+                  Select county
+                </option>
                 {counties.map((cty) => (
                   <option key={cty} value={cty}>
                     {cty}
@@ -216,8 +260,11 @@ const CreatePoll = () => {
             </div>
 
             <div>
-              <label htmlFor="constituency" className="block text-sm font-medium text-gray-700 mb-2">
-                Constituency 
+              <label
+                htmlFor="constituency"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Constituency
               </label>
               <select
                 id="constituency"
@@ -227,9 +274,13 @@ const CreatePoll = () => {
                   setWard("");
                 }}
                 disabled={!county}
-                className={`w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white ${!county ? 'opacity-60 cursor-not-allowed' : ''}`}
-                  >
-                <option value="" disabled>Select Constituency</option>
+                className={`w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white ${
+                  !county ? "opacity-60 cursor-not-allowed" : ""
+                }`}
+              >
+                <option value="" disabled>
+                  Select Constituency
+                </option>
                 {constituencies.map((constituency) => (
                   <option key={constituency} value={constituency}>
                     {constituency}
@@ -239,17 +290,24 @@ const CreatePoll = () => {
             </div>
 
             <div>
-              <label htmlFor="ward" className="block text-sm font-medium text-gray-700 mb-2">
-                Ward 
+              <label
+                htmlFor="ward"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Ward
               </label>
               <select
                 id="ward"
                 value={ward}
                 onChange={(e) => setWard(e.target.value)}
                 disabled={!constituency}
-                className={`w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white ${!constituency ? 'opacity-60 cursor-not-allowed' : ''}`}
-                 >
-                <option value="" disabled>Select Ward</option>
+                className={`w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 bg-white ${
+                  !constituency ? "opacity-60 cursor-not-allowed" : ""
+                }`}
+              >
+                <option value="" disabled>
+                  Select Ward
+                </option>
                 {wards.map((ward) => (
                   <option key={ward} value={ward}>
                     {ward}
@@ -257,6 +315,20 @@ const CreatePoll = () => {
                 ))}
               </select>
             </div>
+          </div>
+          <div>
+            <label htmlFor="expiry" className="block text-sm font-medium text-gray-700 mb-2">
+              Voting Expiry in Hours (optional)
+            </label>
+            <input
+              type="number"
+              id="expiry"
+              min="1"
+              placeholder="Enter duration in hours (e.g. 2, 24, 48)"
+              value={expiry || ""}
+              onChange={(e) => setExpiry(e.target.value ? e.target.value : null)}
+              className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-800 bg-white"
+            />
           </div>
 
           {/* Action Buttons */}
@@ -276,16 +348,20 @@ const CreatePoll = () => {
                   Submitting...
                 </div>
               ) : (
-                <>
+                <div>
                   <Send className="w-5 h-5 mr-2" /> Create Poll
-                </>
+                </div>
               )}
             </button>
           </div>
         </form>
 
         {message && (
-          <p className={`text-center mt-6 text-base font-medium ${message.startsWith("✅") ? "text-green-600" : "text-red-600"}`}>
+          <p
+            className={`text-center mt-6 text-base font-medium ${
+              message.startsWith("✅") ? "text-green-600" : "text-red-600"
+            }`}
+          >
             {message}
           </p>
         )}

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import BlogListPage from "../components/Blogs";
+import BlogListPage from "../BlogPostForm/BlogList/page";
 import AllPollsPage from "../components/AllPollsPage";
 import AllApirantPollPage from "../components/AllAspirantPoll";
 
@@ -20,14 +20,6 @@ export default function HomePage() {
 
   return (
     <div className="max-w-full mx-auto ">
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="lg:w-1/3 w-full">
-          <div className="bg-white shadow-lg rounded-lg p-4">
-            <BlogListPage />
-          </div>
-        </div>
-
-        <div className="lg:w-2/3 w-full">
           <div className="bg-white shadow-lg rounded-lg p-4 space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Active Polls</h2>
@@ -60,7 +52,5 @@ export default function HomePage() {
           </div>
           <div> <h1 className="flex text-4xl justify-center">All polling votes</h1> <AllApirantPollPage  /></div>
         </div>
-      </div>
-    </div>
-  );
+   );
 }

@@ -14,8 +14,6 @@ import {
   Users,
 } from "lucide-react";
 import { baseURL } from "@/config/baseUrl";
-
-// --- Interfaces and Types ---
 interface Aspirant {
   name: string;
   party: string;
@@ -213,8 +211,6 @@ const initialState: State = {
   message: "",
   submitting: false,
 };
-
-// --- Main Component ---
 const CreateQuiz = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -667,8 +663,8 @@ const FixedQuestionBar: React.FC<{
             Submitting Poll...
           </div>
         ) : (
-          <div>
-            <Send className="w-5 h-5 mr-2" /> Submit Survey
+          <div className="flex items-center gap-2">
+            <Send className="w-5 h-5 " /> Submit Survey
           </div>
         )}
       </button>

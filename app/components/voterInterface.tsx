@@ -15,6 +15,7 @@ interface PollData {
   voting_expires_at: string;
   voting_id: string;
   created_at: Date | string;
+  allow_multiple_votes?: boolean;
 }
 
 const VoteInterface = ({ id }: { id: number }) => {
@@ -25,7 +26,14 @@ const VoteInterface = ({ id }: { id: number }) => {
   const [competitorQuestion, setCompetitorQuestion] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<string>("");
   const [voterId, setVoterId] = useState<string>("");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
+  useEffect(() => {
+    const adminStatus = localStorage.getItem("isAdmin");
+    setIsAdmin(adminStatus === "true");
+    setMounted(true);
+  }, []);
   useEffect(() => {
     const storedId = localStorage.getItem("voter_id");
     if (!storedId) {
@@ -48,7 +56,7 @@ const VoteInterface = ({ id }: { id: number }) => {
         console.error("Error fetching poll data:", err);
       }
     };
-
+    fetchData();
     const fetchCompetitorQuestion = async () => {
       try {
         const res = await axios.get(`${baseURL}/api/votes/${id}/questions`);
@@ -75,15 +83,34 @@ const VoteInterface = ({ id }: { id: number }) => {
 
     fetchData();
     fetchCompetitorQuestion();
-    checkIfVoted();
-
-    const refresh = setInterval(() => {
+    const interval = setInterval(() => {
       fetchData();
       fetchCompetitorQuestion();
     }, 5000);
 
-    return () => clearInterval(refresh);
+    return () => clearInterval(interval);
   }, [id, voterId]);
+
+
+  useEffect(() => {
+    if (!data || data.allow_multiple_votes || !voterId) return;
+
+    const checkVoteStatus = async () => {
+      try {
+        const res = await axios.get(`${baseURL}/api/votes/status`, {
+          params: { pollId: id, voter_id: voterId },
+        });
+
+        if (res.data.alreadyVoted) {
+          setMessage("You have already voted in this poll.");
+        }
+      } catch (err) {
+        console.error("Vote status error:", err);
+      }
+    };
+
+    checkVoteStatus();
+  }, [data, voterId]);
 
   // Countdown timer
   useEffect(() => {
@@ -140,14 +167,40 @@ const VoteInterface = ({ id }: { id: number }) => {
   if (!data) return <p className="text-center p-4">Loading poll data...</p>;
 
   const isVotingClosed = countdown === "Voting closed";
-  const hasVoted = message === "You have already voted in this poll.";
+  const hasVoted = !data.allow_multiple_votes && message === "You have already voted in this poll.";
+const toggleMultipleVoting = async () => {
+  if (!data) return;
+  try {
+    const updated = !data.allow_multiple_votes;
+    await axios.patch(`${baseURL}/api/votes/${id}/allow-multiple`, {
+      allow_multiple_votes: updated,
+    });
+    setData({ ...data, allow_multiple_votes: updated });
+  } catch (err) {
+    console.error("Error toggling multiple voting:", err);
+    setMessage("Failed to update voting mode.");
+  }
+};
 
   return (
     <div className="max-w-lg mx-auto p-4">
+      <div className="flex justify-between">
       <h1 className="text-2xl font-bold text-center">{data.title || "Cast Your Vote"}</h1>
-
+        {mounted && isAdmin && (
+<div className="text-center mt-2">
+  <button
+    onClick={toggleMultipleVoting}
+    className={`px-4 py-2 text-sm rounded-full font-medium ${
+      data.allow_multiple_votes ? "bg-blue-600" : "bg-gray-500"
+    } text-white hover:opacity-90`}
+  >
+    {data.allow_multiple_votes ? "Disable Multiple Voting" : "Enable Multiple Voting"}
+  </button>
+</div>
+        )}
+</div>
       <p className="text-red-600 text-center mb-4">
-        {isVotingClosed ? countdown : `Voting closes in: ${countdown}`}
+        {isVotingClosed ? countdown : `Voting closes in: ${countdown || "N/A"}`}
       </p>
 
       {hasVoted ? (

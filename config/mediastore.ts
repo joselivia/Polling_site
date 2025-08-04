@@ -2,6 +2,7 @@ import { create } from "zustand";
 interface Media {
   images: string[];
   videos: string[];
+  pdfs: string[];
 }
 
 interface MediaStore {

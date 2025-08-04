@@ -91,30 +91,38 @@ const BlogPostForm = () => {
         type="file"
         name="media"
         multiple
-        accept="image/*,video/*"
+        accept="image/*,video/*,application/pdf"
         onChange={handleImageChange}
         className="block w-full text-sm text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded file:border-1 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
       />
 
-      <div className="flex flex-wrap gap-2">
-        {previewUrls.map(({ url, type }, idx) =>
-          type.startsWith("image/") ? (
-            <img
-              key={idx}
-              src={url}
-              alt="Preview"
-              className="w-24 h-24 object-cover rounded"
-            />
-          ) : type.startsWith("video/") ? (
-            <video
-              key={idx}
-              src={url}
-              controls
-              className="w-24 h-24 rounded object-cover"
-            />
-          ) : null
-        )}
-      </div>
+<div className="flex flex-wrap gap-2">
+  {previewUrls.map(({ url, type }, idx) => {
+    if (type.startsWith("image/")) {
+      return (
+        <img key={idx} src={url} alt="Preview" className="w-24 h-24 object-cover rounded" />
+      );
+    } else if (type.startsWith("video/")) {
+      return (
+        <video key={idx} src={url} controls className="w-24 h-24 rounded object-cover" />
+      );
+    } else if (type === "application/pdf") {
+      return (
+        <a
+          key={idx}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 underline text-sm"
+        >
+          View PDF {idx + 1}
+        </a>
+      );
+    }
+    return null;
+  })}
+</div>
+
 
  <button
   type="submit"

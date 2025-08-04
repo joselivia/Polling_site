@@ -167,7 +167,7 @@ export const CompanyPage = () => {
               <p className="text-lg leading-relaxed text-gray-700">
                 <span className="text-2xl font-bold text-green-700">
                   Our Mission:
-                </span>{" "}
+                </span>
                 To amplify Africa’s voices through rigorous, ethical research
                 that informs transformative decisions.
               </p>

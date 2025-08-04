@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import BlogListPage from "../BlogPostForm/BlogList/page";
 import AllPollsPage from "../components/AllPollsPage";
 import AllApirantPollPage from "../components/AllAspirantPoll";
+import { PlusCircle } from "lucide-react";
 
 export default function HomePage() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -35,7 +36,13 @@ export default function HomePage() {
                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
                   >
                     Update profile
-                  </a>
+                  </a>  <a
+              href="/BlogPostForm"
+              className="flex items-center p-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 transition"
+            >
+              <PlusCircle className="w-4 h-4 mr-2" />
+              New Blog
+            </a>
                   <a
                     href="/dummyCreatePoll/createpoll"
                     className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"

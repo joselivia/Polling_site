@@ -5,14 +5,7 @@ import axios from "axios";
 import Link from "next/link";
 import { baseURL } from "@/config/baseUrl";
 import { useMediaStore } from "@/config/mediastore";
-import {
-  PlusCircle,
-  FileText,
-  Loader2,
-  Info,
-  ImageOff,
-  ExternalLink,
-} from "lucide-react";
+import { FileText, Loader2, Info, ImageOff, ExternalLink } from "lucide-react";
 
 interface BlogPost {
   id: number;
@@ -20,10 +13,10 @@ interface BlogPost {
   content: string;
   created_at: string;
 }
-
 interface MediaContent {
   images: string[];
   videos: string[];
+  pdfs?: string[];
 }
 
 const truncate = (text: string, limit: number) => {
@@ -38,14 +31,6 @@ const BlogListPage = () => {
   };
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const adminStatus = localStorage.getItem("isAdmin");
-    setIsAdmin(adminStatus === "true");
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -58,12 +43,18 @@ const BlogListPage = () => {
         for (const post of fetchedPosts) {
           if (!mediaMap[post.id]) {
             try {
-              const mediaRes = await axios.get(`${baseURL}/api/posts/${post.id}`);
-              const { images = [], videos = [] } = mediaRes.data as MediaContent;
-              setMedia?.(post.id, { images, videos });
+              const mediaRes = await axios.get(
+                `${baseURL}/api/posts/${post.id}`
+              );
+              const {
+                images = [],
+                videos = [],
+                pdfs = [],
+              } = mediaRes.data as MediaContent;
+              setMedia?.(post.id, { images, videos, pdfs });
             } catch (err) {
               console.error(`❌ Failed to load media for post ${post.id}`, err);
-              setMedia?.(post.id, { images: [], videos: [] });
+              setMedia?.(post.id, { images: [], videos: [], pdfs: [] });
             }
           }
         }
@@ -81,18 +72,6 @@ const BlogListPage = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4">
       <div className="mx-auto bg-white shadow-md rounded-lg p-6">
-        <div className="flex justify-end mb-6">
-          {mounted && isAdmin && (
-            <Link
-              href="/BlogPostForm"
-              className="flex items-center p-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition"
-            >
-              <PlusCircle className="w-4 h-4 mr-2" />
-              New Blog
-            </Link>
-          )}
-        </div>
-
         {loading ? (
           <div className="flex flex-col items-center text-gray-500 py-16">
             <Loader2 className="animate-spin w-10 h-10 mb-4" />
@@ -114,10 +93,13 @@ const BlogListPage = () => {
               const media = mediaMap[post.id];
               const hasImage = media?.images?.length > 0;
               const hasVideo = media?.videos?.length > 0;
+              const hasPDF = media?.pdfs?.length > 0;
               const mediaSrc = hasImage
                 ? media.images[0]
                 : hasVideo
                 ? media.videos[0]
+                : hasPDF
+                ? media.pdfs[0]
                 : "";
 
               return (
@@ -158,6 +140,34 @@ const BlogListPage = () => {
                             type="video/mp4"
                           />
                         </video>
+                      ) : hasPDF ? (
+                      <button
+  onClick={() => {
+    try {
+      if (mediaSrc.startsWith("data:")) {
+        const base64 = mediaSrc.split(",")[1];
+        const byteString = atob(base64);
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+        const blob = new Blob([ab], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank");
+      } else {
+        window.open(`${baseURL}/${mediaSrc}`, "_blank");
+      }
+    } catch (error) {
+      console.error("Error opening PDF:", error);
+      alert("Could not open PDF.");
+    }
+  }}
+  className="flex flex-col bg-green-400 rounded-full items-center text-white text-sm p-4"
+>
+  📄 View PDF
+</button>
+
                       ) : (
                         <ImageOff className="w-12 h-12 text-gray-400" />
                       )

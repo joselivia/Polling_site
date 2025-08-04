@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
@@ -9,9 +8,9 @@ import {
   Image as ImageIcon, 
   Video, 
   Loader2, 
-  Info,   X, 
+  Info,   X,
+  FileText, 
 } from "lucide-react"; 
-
 interface BlogPost {
   id: number;
   title: string;
@@ -19,7 +18,9 @@ interface BlogPost {
   created_at: string;
   images: string[];
   videos: string[];
+  pdfs?: string[];
 }
+
 const linkify = (text: string) => {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   return text.split("\n").map((line, i) => (
@@ -49,6 +50,7 @@ const BlogDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+
   useEffect(() => {
     if (!id) {
       setLoading(false);
@@ -65,6 +67,7 @@ const BlogDetailsPage = () => {
           ...res.data,
           images: res.data.images || [],
           videos: res.data.videos || [],
+          pdfs: res.data.pdfs || [],
         });
       })
       .catch((err) => {
@@ -74,7 +77,7 @@ const BlogDetailsPage = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, [id, baseURL]); // Added baseURL to dependency array
+  }, [id]);
 
   if (loading) {
     return (
@@ -112,7 +115,6 @@ const BlogDetailsPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 sm:p-6 lg:p-8">
       <div className=" mx-auto bg-white shadow-xl rounded-2xl p-2 sm:p-8 border border-gray-200">
-        {/* Blog Post Header */}
         <div className="mb-8 pb-4 border-b border-gray-200 text-center">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3 leading-tight">
             {post.title}
@@ -123,7 +125,6 @@ const BlogDetailsPage = () => {
           </p>
         </div>
 
-        {/* Images Section */}
         {post.images.length > 0 && (
           <div className="mb-8">
             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
@@ -133,12 +134,12 @@ const BlogDetailsPage = () => {
               {post.images.map((img, idx) => (
                 <img
                   key={idx}
-                  src={img.startsWith('data:') ? img : `${baseURL}/${img}`} // Handle base64 or relative paths
+                  src={img.startsWith('data:') ? img : `${baseURL}/${img}`}
                   alt={`Post image ${idx}`}
                   className="w-full h-56 object-cover rounded-lg shadow-md border border-gray-200 transform hover:scale-[1.03] transition-transform duration-200 ease-in-out"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).onerror = null; // Prevent infinite loop
-                    (e.target as HTMLImageElement).src = "https://placehold.co/600x400/E2E8F0/A0AEC0?text=Image+Load+Error"; // Placeholder on error
+                    (e.target as HTMLImageElement).onerror = null;
+                    (e.target as HTMLImageElement).src = "https://placehold.co/600x400/E2E8F0/A0AEC0?text=Image+Load+Error";
                   }}
                 />
               ))}
@@ -146,7 +147,6 @@ const BlogDetailsPage = () => {
           </div>
         )}
 
-        {/* Videos Section */}
         {post.videos.length > 0 && (
           <div className="mb-8">
             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
@@ -168,27 +168,10 @@ const BlogDetailsPage = () => {
           </div>
         )}
 
-        {/* Blog Content */}
-        <div className="prose prose-lg max-w-none text-gray-900 leading-relaxed">
+       <div className="prose prose-lg max-w-none text-gray-900 leading-relaxed">
           {linkify(post.content)}
         </div>
       </div>
-      <style jsx global>{`
-        body::-webkit-scrollbar {
-          width: 8px;
-        }
-        body::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
-        }
-        body::-webkit-scrollbar-thumb {
-          background: #cbd5e0;
-          border-radius: 10px;
-        }
-        body::-webkit-scrollbar-thumb:hover {
-          background: #a0aec0;
-        }
-      `}</style>
     </div>
   );
 };

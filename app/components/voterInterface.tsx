@@ -28,12 +28,15 @@ const VoteInterface = ({ id }: { id: number }) => {
   const [voterId, setVoterId] = useState<string>("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [localAllowMultipleVotes, setLocalAllowMultipleVotes] = useState<boolean | null>(null);
 
+  // Previous useEffect hooks remain unchanged
   useEffect(() => {
     const adminStatus = localStorage.getItem("isAdmin");
     setIsAdmin(adminStatus === "true");
     setMounted(true);
   }, []);
+
   useEffect(() => {
     const storedId = localStorage.getItem("voter_id");
     if (!storedId) {
@@ -51,12 +54,19 @@ const VoteInterface = ({ id }: { id: number }) => {
     const fetchData = async () => {
       try {
         const res = await axios.get(`${baseURL}/aspirant/${id}`);
-        setData(res.data as PollData);
+        const fetchedData = res.data as PollData;
+        setData((prev) => ({
+          ...fetchedData,
+          allow_multiple_votes:
+            localAllowMultipleVotes !== null
+              ? localAllowMultipleVotes
+              : fetchedData.allow_multiple_votes,
+        }));
       } catch (err) {
         console.error("Error fetching poll data:", err);
       }
     };
-    fetchData();
+
     const fetchCompetitorQuestion = async () => {
       try {
         const res = await axios.get(`${baseURL}/api/votes/${id}/questions`);
@@ -73,7 +83,7 @@ const VoteInterface = ({ id }: { id: number }) => {
           params: { pollId: id, voter_id: voterId },
         });
 
-        if (res.data.alreadyVoted) {
+        if (res.data.alreadyVoted && !data?.allow_multiple_votes) {
           setMessage("You have already voted in this poll.");
         }
       } catch (err) {
@@ -83,36 +93,18 @@ const VoteInterface = ({ id }: { id: number }) => {
 
     fetchData();
     fetchCompetitorQuestion();
+    if (!data?.allow_multiple_votes) {
+      checkIfVoted();
+    }
+
     const interval = setInterval(() => {
       fetchData();
       fetchCompetitorQuestion();
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [id, voterId]);
+  }, [id, voterId, data?.allow_multiple_votes, localAllowMultipleVotes]);
 
-
-  useEffect(() => {
-    if (!data || data.allow_multiple_votes || !voterId) return;
-
-    const checkVoteStatus = async () => {
-      try {
-        const res = await axios.get(`${baseURL}/api/votes/status`, {
-          params: { pollId: id, voter_id: voterId },
-        });
-
-        if (res.data.alreadyVoted) {
-          setMessage("You have already voted in this poll.");
-        }
-      } catch (err) {
-        console.error("Vote status error:", err);
-      }
-    };
-
-    checkVoteStatus();
-  }, [data, voterId]);
-
-  // Countdown timer
   useEffect(() => {
     if (!data?.voting_expires_at) return;
 
@@ -151,6 +143,9 @@ const VoteInterface = ({ id }: { id: number }) => {
       if (response.status === 200) {
         setMessage("Vote recorded successfully!");
         setSelectedCandidateId(null);
+        if (!data.allow_multiple_votes) {
+          setMessage("You have already voted in this poll.");
+        }
       }
     } catch (error: any) {
       if (axios.isAxiosError(error) && error.response?.status === 403) {
@@ -164,43 +159,64 @@ const VoteInterface = ({ id }: { id: number }) => {
     }
   };
 
+  const toggleMultipleVoting = async () => {
+    if (!data) return;
+    try {
+      const updated = !data.allow_multiple_votes;
+      await axios.patch(`${baseURL}/api/votes/${id}/allow-multiple`, {
+        allow_multiple_votes: updated,
+      });
+      setLocalAllowMultipleVotes(updated);
+      setData({ ...data, allow_multiple_votes: updated });
+      setMessage(
+        updated ? "Multiple voting enabled" : "Multiple voting disabled"
+      );
+    } catch (err) {
+      console.error("Error toggling multiple voting:", err);
+      setMessage("Failed to update voting mode.");
+    }
+  };
+
   if (!data) return <p className="text-center p-4">Loading poll data...</p>;
 
   const isVotingClosed = countdown === "Voting closed";
-  const hasVoted = !data.allow_multiple_votes && message === "You have already voted in this poll.";
-const toggleMultipleVoting = async () => {
-  if (!data) return;
-  try {
-    const updated = !data.allow_multiple_votes;
-    await axios.patch(`${baseURL}/api/votes/${id}/allow-multiple`, {
-      allow_multiple_votes: updated,
-    });
-    setData({ ...data, allow_multiple_votes: updated });
-  } catch (err) {
-    console.error("Error toggling multiple voting:", err);
-    setMessage("Failed to update voting mode.");
+
+  // Render only "Voting closed" when voting has expired
+  if (isVotingClosed) {
+    return (
+      <div className="max-w-lg mx-auto p-4">
+        <p className="text-red-600 text-center text-xl font-semibold">
+          Voting closed
+        </p>
+      </div>
+    );
   }
-};
+
+  const hasVoted =
+    !data.allow_multiple_votes &&
+    message === "You have already voted in this poll.";
 
   return (
     <div className="max-w-lg mx-auto p-4">
       <div className="flex justify-between">
-      <h1 className="text-2xl font-bold text-center">{data.title || "Cast Your Vote"}</h1>
+        <h1 className="text-2xl font-bold text-center">{data.title || "Cast Your Vote"}</h1>
         {mounted && isAdmin && (
-<div className="text-center mt-2">
-  <button
-    onClick={toggleMultipleVoting}
-    className={`px-4 py-2 text-sm rounded-full font-medium ${
-      data.allow_multiple_votes ? "bg-blue-600" : "bg-gray-500"
-    } text-white hover:opacity-90`}
-  >
-    {data.allow_multiple_votes ? "Disable Multiple Voting" : "Enable Multiple Voting"}
-  </button>
-</div>
+          <div className="text-center mt-2">
+            <button
+              onClick={toggleMultipleVoting}
+              className={`px-4 py-2 text-sm rounded-full font-medium ${
+                data.allow_multiple_votes ? "bg-blue-600" : "bg-gray-500"
+              } text-white hover:opacity-90`}
+            >
+              {data.allow_multiple_votes
+                ? "Disable Multiple Voting"
+                : "Enable Multiple Voting"}
+            </button>
+          </div>
         )}
-</div>
+      </div>
       <p className="text-red-600 text-center mb-4">
-        {isVotingClosed ? countdown : `Voting closes in: ${countdown || "N/A"}`}
+        Voting closes in: {countdown || "Not Set"}
       </p>
 
       {hasVoted ? (

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ResponsiveContainer,
   PieChart,
@@ -73,7 +73,13 @@ const FullPollDetails = ({ id }: { id?: number }) => {
     fetcher,
     { refreshInterval: 1000 }
   );
-
+ const [isAdmin, setIsAdmin] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const adminStatus = localStorage.getItem("isAdmin");
+    setIsAdmin(adminStatus === "true");
+    setMounted(true);
+  }, []);
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -316,13 +322,13 @@ const FullPollDetails = ({ id }: { id?: number }) => {
             <span className="font-semibold ml-1">
               {new Date(data.created_at).toLocaleString("en-KE")}
             </span>
-          </p>
+          </p> {mounted && isAdmin && (
           <button
             onClick={() => window.print()}
             className="flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105"
           >
             <Printer className="w-5 h-5 mr-2" /> Print Report
-          </button>
+          </button>)}
         </div>
       </div>
     </div>

@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import BlogListPage from "../BlogPostForm/BlogList/page";
 import AllPollsPage from "../components/AllPollsPage";
 import AllApirantPollPage from "../components/AllAspirantPoll";
 import { PlusCircle } from "lucide-react";

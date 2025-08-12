@@ -1,2 +1,1 @@
-export const baseURL = "https://pollserver-production-d921.up.railway.app";
-//export const baseURL = "http://localhost:8082";
+export const baseURL = "http://194.34.232.24:8082";

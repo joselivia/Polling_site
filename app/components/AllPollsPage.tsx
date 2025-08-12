@@ -88,12 +88,13 @@ setPolls(data);
         {polls.length === 0 ? (
           <div className="text-center py-10">
             <p className="text-xl text-gray-600">No polls available yet. Create one!</p>
+           {mounted && isAdmin && (  
             <Link
               href="/dummyCreatePoll/createpoll"
               className="mt-6 inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-300"
             >
               Create New Poll
-            </Link>
+            </Link>)}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

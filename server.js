@@ -3,7 +3,7 @@ const { parse } = require('url')
 const next = require('next')
 
 const dev = process.env.NODE_ENV !== 'production'
-const hostname =process.env.NODE_ENV !=="production" ? 'localhost':"daves.co.ke"
+const hostname =process.env.NODE_ENV !=="production" ? 'localhost':"politrackafrica.co.ke/"
 const port = process.env.PORT || 3001
 
 const app = next({ dev, hostname, port })

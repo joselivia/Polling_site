@@ -61,7 +61,7 @@ const BlogDetailsPage = () => {
     setLoading(true);
     setError(null);
     axios
-      .get<BlogPost>(`${baseURL}/api/posts/${id}`)
+      .get<BlogPost>(`${baseURL}/api/blogs/posts/${id}`)
       .then((res) => {
         setPost({
           ...res.data,

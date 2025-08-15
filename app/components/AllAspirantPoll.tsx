@@ -22,7 +22,7 @@ const AllApirantPollPage = () => {
   useEffect(() => {
     const fetchAllPolls = async () => {
       try {
-        const response = await fetch(`${baseURL}/aspirant`); 
+        const response = await fetch(`${baseURL}/api/aspirant`); 
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || "Failed to fetch polls.");

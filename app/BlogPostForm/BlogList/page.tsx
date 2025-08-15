@@ -37,14 +37,14 @@ const BlogListPage = () => {
       setLoading(true);
       setError("");
       try {
-        const res = await axios.get(`${baseURL}/api/posts?limit=10&offset=0`);
+        const res = await axios.get(`${baseURL}/api/blogs/posts?limit=10&offset=0`);
         const fetchedPosts = res.data?.posts || [];
         setPosts(fetchedPosts);
         for (const post of fetchedPosts) {
           if (!mediaMap[post.id]) {
             try {
               const mediaRes = await axios.get(
-                `${baseURL}/api/posts/${post.id}`
+                `${baseURL}/api/blogs/posts/${post.id}`
               );
               const {
                 images = [],

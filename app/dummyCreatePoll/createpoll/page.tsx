@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState } from "react";
 import {
   CATEGORY_OPTIONS,
@@ -226,7 +225,6 @@ const CreatePoll = () => {
                 ))}
               </select>
             </div>
-
             <div>
               <label
                 htmlFor="county"

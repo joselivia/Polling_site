@@ -22,7 +22,7 @@ const UpdateAdminForm = () => {
     setMessage(null);
 
     try {
-      const res = await axios.put(`${baseURL}/update-admin`, {
+      const res = await axios.put(`${baseURL}/api/update-admin`, {
         currentEmail,
         currentPassword,
         newEmail,

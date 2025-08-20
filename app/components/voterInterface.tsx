@@ -53,7 +53,7 @@ const VoteInterface = ({ id }: { id: number }) => {
 
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${baseURL}/aspirant/${id}`);
+        const res = await axios.get(`${baseURL}/api/aspirant/${id}`);
         const fetchedData = res.data as PollData;
         setData((prev) => ({
           ...fetchedData,

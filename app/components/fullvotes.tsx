@@ -69,7 +69,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const FullPollDetails = ({ id }: { id?: number }) => {
   const { data, error, isLoading } = useSWR<PollData>(
-    id ? `${baseURL}/aspirant/${id}` : null,
+    id ? `${baseURL}/api/aspirant/${id}` : null,
     fetcher,
     { refreshInterval: 1000 }
   );

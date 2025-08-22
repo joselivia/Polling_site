@@ -10,19 +10,13 @@ import {
   Mail,
   Phone,
   MapPin,
-  Twitter,
-  Linkedin,
-  Youtube,
   CheckCircle,
   Lightbulb,
   Shield,
   TrendingUp,
   BookOpen,
-  Newspaper,
   Download,
-  ArrowRight,
-  Menu,
-  X,
+
 } from "lucide-react";
 
 export const CompanyPage = () => {
@@ -45,7 +39,7 @@ export const CompanyPage = () => {
               "about",
               "services",
               "case-studies",
-              "resources",
+              "latest Report",
               "contact",
             ].map((section) => (
               <a
@@ -403,25 +397,22 @@ export const CompanyPage = () => {
           </div>
         </div>
       </section>
-      {/* ————————————————— RESOURCES ————————————————— */}
+      {/* ————————————————— latest Report ————————————————— */}
       <section
-        id="resources"
+        id="latest Report"
         className="py-20 md:py-28 bg-gradient-to-r from-indigo-700 to-green-700 text-white rounded-b-lg shadow-lg"
       >
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-center mb-16 animate-fade-in-up">
-            Resources & Insights
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {/* Reports */}
-            <div className="bg-white text-gray-800 p-8 rounded-xl shadow-2xl transform hover:scale-105 transition duration-300 animate-fade-in-left">
-              <div className="flex items-center mb-6">
-                <BookOpen className="text-indigo-700 mr-3" size={32} />
-                <h3 className="text-2xl font-bold text-indigo-700">
+        <div className="container mx-auto px-2">
+          <div className="flex items-center justify-center mb-6">
+                <BookOpen className=" mr-3" size={50} />
+                <h1 className="text-4xl md:text-5xl font-extrabold animate-fade-in-up">
                   Latest Reports
-                </h3>
+                </h1>
               </div>
+
+          <div className="bg-white text-gray-800 p-8 rounded-xl shadow-2xl transform hover:scale-105 transition duration-300 animate-fade-in-left">
+            {/* Reports */}
+           
               <ul className="space-y-4 text-gray-700">
                 {[
                   '"Urbanization vs. Tradition: Africa’s Governance Dilemma" (2024)',
@@ -436,31 +427,7 @@ export const CompanyPage = () => {
                   </li>
                 ))}
               </ul>
-            </div>
-
-            {/* Blog */}
-            <div className="bg-white text-gray-800 p-8 rounded-xl shadow-2xl transform hover:scale-105 transition duration-300 animate-fade-in-right">
-              <div className="flex items-center mb-6">
-                <Newspaper className="text-indigo-700 mr-3" size={32} />
-                <h3 className="text-2xl font-bold text-indigo-700">
-                  Blog Headlines
-                </h3>
-              </div>
-              <ul className="space-y-4 text-gray-700">
-                {[
-                  "Why East Africa’s Carbon Tax Divide Matters",
-                  "Mozambique Elections: Social Media’s Double‑Edged Sword",
-                  "African Data Privacy Laws: What Pollsters Must Know",
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-3">
-                    <ArrowRight size={20} className="text-green-600" />
-                    <a href="#" className="hover:text-indigo-700 transition">
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          
           </div>
         </div>
       </section>
@@ -524,39 +491,7 @@ export const CompanyPage = () => {
           </div>
         </div>
       </section>
-      <footer className="bg-indigo-900 text-white py-12 rounded-t-lg shadow-inner">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-xl font-semibold mb-6">
-            Politrack Africa: Where Numbers Meet Narrative.
-          </p>
-          <div className="flex justify-center space-x-6 mb-6">
-            <a
-              href="#"
-              aria-label="Twitter"
-              className="hover:text-yellow-400 transition"
-            >
-              <Twitter size={28} />
-            </a>
-            <a
-              href="#"
-              aria-label="LinkedIn"
-              className="hover:text-yellow-400 transition"
-            >
-              <Linkedin size={28} />
-            </a>
-            <a
-              href="#"
-              aria-label="YouTube"
-              className="hover:text-yellow-400 transition"
-            >
-              <Youtube size={28} />
-            </a>
-          </div>
-          <p className="text-sm opacity-75">
-            © {new Date().getFullYear()} Politrack Africa. All rights reserved.
-          </p>
-        </div>
-      </footer>
+  
     </div>
   );
 };

@@ -1,11 +1,11 @@
 "use client";
 import React from "react";
-import { CompanyPage } from "./components/CompanyWebsite";
+import AdminLogin from "./Login/page";
 
 export default function Home() {
   return (
-    <div className="max-w-full mx-auto ">
-      <CompanyPage />
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <AdminLogin/>
     </div>
   );
 }

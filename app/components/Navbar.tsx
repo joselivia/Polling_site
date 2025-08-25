@@ -9,81 +9,65 @@ export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems = [
-    { label: "Home", href: "/" },
-    { label: "Live Reports", href: "/Reports" },
+    { label: "Home", href: "/Reports" },
     { label: "News", href: "/BlogPostForm/BlogList" },
-    {
-      label: "Login",
-      href: "/Login",
-      className:
-        "inline-block bg-orange-600 text-white font-medium px-5 py-2.5 rounded-md shadow hover:bg-blue-700 transition duration-300 ease-in-out",
-    },
   ];
 
   const toggleSidebar = () => setSidebarOpen((v) => !v);
   const closeSidebar = () => setSidebarOpen(false);
 
   return (
-    <nav className="bg-white dark:bg-gray-900 border-b  sticky top-0 z-50">
-      <div className="md:hidden flex justify-between">
+    <nav className="bg-white dark:bg-gray-900 border-b sticky top-0 z-50">
+      <div className="md:hidden flex justify-between items-center px-4 py-2">
         <Image
           src="/logo.jpg"
           alt="Politrack Africa Logo"
           width={100}
-          height={100}
+          height={50}
         />
-        <button onClick={toggleSidebar} className="text-2xl">
-          {sidebarOpen ? <FiX color="white" /> : <FiMenu color="white" />}
+        <button
+          onClick={toggleSidebar}
+          className="text-3xl p-2 text-gray-900 dark:text-white focus:outline-none"
+        >
+          {sidebarOpen ? <FiX /> : <FiMenu />}
         </button>
       </div>
-      <div className="hidden md:flex flex items-center justify-between max-w-7xl mx-auto px-4 ">
+
+      {/* Desktop Navbar */}
+      <div className="hidden md:flex items-center justify-between max-w-7xl mx-auto px-6 py-3">
         <Image
           src="/logo.jpg"
           alt="Politrack Africa Logo"
           width={150}
           height={80}
         />
-        <ul className="flex space-x-8 font-medium justify-center items-center">
+        <ul className="flex space-x-8 font-medium">
           {navItems.map((item) => (
             <li key={item.label}>
-              {item.className ? (
-                <Link href={item.href} className={item.className}>
-                  {item.label}
-                </Link>
-              ) : (
-                <Link
-                  href={item.href}
-                  className="flex text-white justify-center items-center "
-                >
-                  {item.label}
-                </Link>
-              )}
+              <Link
+                href={item.href}
+                className="text-gray-900 dark:text-white hover:text-blue-600"
+              >
+                {item.label}
+              </Link>
             </li>
           ))}
         </ul>
       </div>
+
+      {/* Mobile Sidebar */}
       {sidebarOpen && (
-        <div className="md:hidden fixed top-9 right-0 w-3/4 h-full bg-gray-800 text-white p-6">
-          <ul className="space-y-4">
+        <div className="md:hidden fixed top-16 right-0 w-3/4 h-full bg-gray-900 text-white p-6 shadow-lg z-50">
+          <ul className="space-y-6 text-lg">
             {navItems.map((item) => (
               <li key={item.label}>
-                {item.className ? (
-                  <Link
-                    href={item.href}
-                    className={item.className}
-                    onClick={closeSidebar}
-                  >
-                    {item.label}
-                  </Link>
-                ) : (
-                  <Link
-                    href={item.href}
-                    className="text-gray-900 dark:text-white"
-                    onClick={closeSidebar}
-                  >
-                    {item.label}
-                  </Link>
-                )}
+                <Link
+                  href={item.href}
+                  className="hover:text-blue-400"
+                  onClick={closeSidebar}
+                >
+                  {item.label}
+                </Link>
               </li>
             ))}
           </ul>

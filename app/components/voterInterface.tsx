@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { baseURL } from "@/config/baseUrl";
+import { useRouter } from "next/navigation";
 
 interface Candidate {
   id: number;
@@ -29,7 +30,7 @@ const VoteInterface = ({ id }: { id: number }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [localAllowMultipleVotes, setLocalAllowMultipleVotes] = useState<boolean | null>(null);
-
+const router=useRouter();
   // Previous useEffect hooks remain unchanged
   useEffect(() => {
     const adminStatus = localStorage.getItem("isAdmin");
@@ -143,6 +144,7 @@ const VoteInterface = ({ id }: { id: number }) => {
       if (response.status === 200) {
         setMessage("Vote recorded successfully!");
         setSelectedCandidateId(null);
+         setTimeout(() => router.push('/Thankyou'), 1000); 
         if (!data.allow_multiple_votes) {
           setMessage("You have already voted in this poll.");
         }

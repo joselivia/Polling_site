@@ -34,16 +34,6 @@ export default function Footerpage() {
           © {new Date().getFullYear()} Politrack Africa. All rights reserved.
         </p>
       </div>
-      <hr className="p-2" />
-      <p className="text-center">
-        👨‍💻 Powered By:{" "}
-        <a
-          href="https://portfolio-gilt-six-94.vercel.app/"
-          className="text-green-300 hover:text-green-100"
-        >
-          Jomu_Digital
-        </a>
-      </p>
-    </footer>
+      </footer>
   );
 }

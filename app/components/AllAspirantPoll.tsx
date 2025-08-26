@@ -17,10 +17,13 @@ interface Candidate {
   name: string;
   party?: string;
   profile?: string | File | null;
-  voteCount?: number;
-  percentage?: string;
 }
-
+interface Question {
+  id?: number;
+  question_text: string;
+  type: string;
+  is_competitor_question?: boolean;
+}
 interface PollData {
   id: number;
   title: string;
@@ -34,24 +37,18 @@ interface PollData {
   spoiled_votes?: number;
   results?: Candidate[];
   competitors?: Candidate[];
+  questions?: Question[];
+  published: boolean;
   created_at: Date | string;
 }
 const AllApirantPollPage = () => {
   const [polls, setPolls] = useState<PollData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [menuOpenId, setMenuOpenId] = useState<number | null>(null);
   const [editingPoll, setEditingPoll] = useState<PollData | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
-  useEffect(() => {
-    const adminStatus = localStorage.getItem("isAdmin");
-    setIsAdmin(adminStatus === "true");
-    setMounted(true);
-  }, []);
-
   const fetchAllPolls = async () => {
     try {
       const response = await fetch(`${baseURL}/api/aspirant`);
@@ -94,28 +91,37 @@ const AllApirantPollPage = () => {
   const handleEditSubmit = async (id: number) => {
     if (!editingPoll) return;
     setSubmitting(true);
-console.log("Submitting poll:", editingPoll);
-      const formData = new FormData();
-      formData.append("title", editingPoll.title);
-      formData.append("presidential", editingPoll.presidential || "");
-      formData.append("category", editingPoll.category || "");
-      formData.append("region", editingPoll.region || "");
-      formData.append("county", editingPoll.county || "");
-      formData.append("constituency", editingPoll.constituency || "");
-      formData.append("ward", editingPoll.ward || "");
-editingPoll.competitors?.forEach((comp, i) => {
-  formData.append(`competitors[${i}][id]`, comp.id ? String(comp.id) : "");
-  formData.append(`competitors[${i}][name]`, comp.name || "");
-  formData.append(`competitors[${i}][party]`, comp.party || "");
-if (comp.profile instanceof File) {
-  formData.append(`competitors[${i}][profile]`, comp.profile);
-}
+    const formData = new FormData();
+    formData.append("title", editingPoll.title);
+    formData.append("presidential", editingPoll.presidential || "");
+    formData.append("category", editingPoll.category || "");
+    formData.append("region", editingPoll.region || "");
+    formData.append("county", editingPoll.county || "");
+    formData.append("constituency", editingPoll.constituency || "");
+    formData.append("ward", editingPoll.ward || "");
+    editingPoll.questions?.forEach((q, i) => {
+      formData.append(`questions[${i}][id]`, q.id ? String(q.id) : "");
+      formData.append(`questions[${i}][question_text]`, q.question_text || "");
+      formData.append(`questions[${i}][type]`, q.type || "text");
+      formData.append(
+        `questions[${i}][is_competitor_question]`,
+        q.is_competitor_question ? "true" : "false"
+      );
+    });
 
-}); console.log("FormData entries:", [...formData.entries()]);
+    editingPoll.competitors?.forEach((comp, i) => {
+      formData.append(`competitors[${i}][id]`, comp.id ? String(comp.id) : "");
+      formData.append(`competitors[${i}][name]`, comp.name || "");
+      formData.append(`competitors[${i}][party]`, comp.party || "");
+      if (comp.profile instanceof File) {
+        formData.append(`competitors[${i}][profile]`, comp.profile);
+      }
+    });
+    console.log("FormData entries:", [...formData.entries()]);
     try {
       const res = await fetch(`${baseURL}/api/aspirant/${id}`, {
         method: "PUT",
-        body: formData, 
+        body: formData,
       });
 
       if (!res.ok) throw new Error("Failed to update poll");
@@ -132,27 +138,70 @@ if (comp.profile instanceof File) {
       setSubmitting(false);
     }
   };
+  const handleEdit = async (poll: PollData) => {
+    try {
+      const res = await fetch(`${baseURL}/api/aspirant/${poll.id}`);
+      if (!res.ok) throw new Error("Failed to fetch poll data");
+      const data = await res.json();
 
-  // includes competitors
-const handleEdit = async (poll: PollData) => {
-  try {
-    const res = await fetch(`${baseURL}/api/aspirant/${poll.id}`);
-    if (!res.ok) throw new Error("Failed to fetch poll data");
-    const data = await res.json();
-    console.log("Fetched poll data:", data);
-    setEditingPoll({
-      ...data,
-      competitors: data.competitors.map((comp: Candidate) => ({
-        ...comp,
-        id: comp.id || null,
-        profile: comp.profile || null,
-      })),
-    });
-  } catch (err) {
-    console.error("Failed to fetch poll with competitors:", err);
-    alert("Failed to load poll for editing.");
-  }
-};
+      let competitorQ = null;
+      try {
+        const qRes = await fetch(`${baseURL}/api/votes/${poll.id}/questions`);
+        if (qRes.ok) {
+          const qData = await qRes.json();
+          competitorQ = qData.find((q: any) => q.is_competitor_question);
+        }
+      } catch (err) {
+        console.error("Error fetching competitor question:", err);
+      }
+
+      console.log("Fetched poll data:", data);
+
+      setEditingPoll({
+        ...data,
+        competitors:
+          data.competitors?.map((comp: Candidate) => ({
+            ...comp,
+            id: comp.id || null,
+            profile: comp.profile || null,
+          })) || [],
+        questions: competitorQ
+          ? [
+              {
+                id: competitorQ.id,
+                question_text: competitorQ.question_text,
+                type: competitorQ.type || "text",
+                is_competitor_question: true,
+              },
+            ]
+          : [],
+      });
+    } catch (err) {
+      console.error("Failed to fetch poll with competitors:", err);
+      alert("Failed to load poll for editing.");
+    }
+  };
+
+  const togglePublish = async (id: number, published: boolean) => {
+    try {
+      const res = await fetch(`${baseURL}/api/aspirant/${id}/publish`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ published: !published }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update publish status");
+
+      const updated = await res.json();
+      setPolls((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, published: updated.published } : p
+        )
+      );
+    } catch (err: any) {
+      alert(err.message || "Failed to toggle publish status");
+    }
+  };
 
   if (loading) {
     return (
@@ -192,8 +241,6 @@ const handleEdit = async (poll: PollData) => {
               key={poll.id}
               className="p-6 border border-gray-200 rounded-xl shadow-md bg-white hover:shadow-lg hover:border-blue-300 transition-all duration-200 group flex flex-col justify-between relative"
             >
-              {/* Menu Button */}
-              {mounted && isAdmin && (
                 <>
                   <button
                     onClick={() =>
@@ -203,10 +250,15 @@ const handleEdit = async (poll: PollData) => {
                   >
                     <EllipsisVertical className="text-gray-600 w-6 h-6" />
                   </button>
-
-                  {/* Dropdown */}
                   {menuOpenId === poll.id && (
                     <div className="absolute top-10 right-3 w-40 bg-white rounded-lg shadow-lg flex flex-col p-2 z-50 border">
+                      <button
+                        onClick={() => togglePublish(poll.id, poll.published)}
+                        className="px-3 py-2 text-sm text-gray-800 hover:bg-gray-200 rounded text-left"
+                      >
+                        {poll.published ? "Unpublish" : "Publish"}
+                      </button>
+
                       <button
                         onClick={() => {
                           handleEdit(poll);
@@ -225,9 +277,7 @@ const handleEdit = async (poll: PollData) => {
                     </div>
                   )}
                 </>
-              )}
-
-              {/* Poll Info */}
+    
               <div>
                 <h2 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-blue-700 transition-colors">
                   {poll.title}
@@ -248,18 +298,14 @@ const handleEdit = async (poll: PollData) => {
                   </p>
                 </div>
               </div>
-
-              {/* Action Buttons */}
               <div className="mt-4 flex flex-col sm:flex-row gap-3">
-                {mounted && isAdmin && (
-                  <Link
+                 <Link
                     href={`/vote/${poll.id}`}
                     className="block text-blue-600 font-semibold hover:underline flex-grow text-center py-2 px-3 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors"
                   >
                     Vote
                   </Link>
-                )}
-                <Link
+                          <Link
                   href={`/fullvotes/${poll.id}`}
                   className="block text-indigo-600 font-semibold hover:underline flex-grow text-center py-2 px-3 border border-indigo-600 rounded-md hover:bg-indigo-50 transition-colors"
                 >
@@ -269,8 +315,6 @@ const handleEdit = async (poll: PollData) => {
             </div>
           ))}
         </div>
-
-        {/* Edit Modal */}
         {editingPoll && (
           <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 overflow-y-auto">
             <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-2xl max-h-[95vh] overflow-y-auto transform scale-95 transition-transform duration-300">
@@ -436,6 +480,43 @@ const handleEdit = async (poll: PollData) => {
                     </div>
                   </div>
                 </div>
+                {/* Questions Section */}
+                <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                  <h3 className="text-xl font-semibold text-gray-700 mb-4">
+                    Competitor Questions
+                  </h3>
+                  <div className="space-y-4">
+                    {editingPoll.questions
+                      ?.filter((q) => q.is_competitor_question) // ✅ only competitor questions
+                      .map((q, index) => (
+                        <div
+                          key={q.id ?? index}
+                          className="flex-1 w-full space-y-2"
+                        >
+                          <input
+                            type="text"
+                            value={q.question_text || ""}
+                            onChange={(e) => {
+                              const newQuestions = [
+                                ...(editingPoll.questions || []),
+                              ];
+                              const qIndex = newQuestions.findIndex(
+                                (x) => x.id === q.id
+                              );
+                              newQuestions[qIndex].question_text =
+                                e.target.value;
+                              setEditingPoll({
+                                ...editingPoll,
+                                questions: newQuestions,
+                              });
+                            }}
+                            placeholder="Competitor Question"
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </div>
 
                 {/* Competitors Section */}
                 <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
@@ -444,11 +525,10 @@ const handleEdit = async (poll: PollData) => {
                   </h3>
                   <div className="space-y-4">
                     {editingPoll.competitors?.map((comp, index) => (
-<div
-  key={`${comp.id ?? "new"}-${index}`}
-  className="flex flex-col sm:flex-row items-center gap-4 p-4 border rounded-lg bg-white shadow-sm"
->
-
+                      <div
+                        key={`${comp.id ?? "new"}-${index}`}
+                        className="flex flex-col sm:flex-row items-center gap-4 p-4 border rounded-lg bg-white shadow-sm"
+                      >
                         <div className="flex-1 w-full space-y-2">
                           <input
                             type="text"
@@ -516,14 +596,14 @@ const handleEdit = async (poll: PollData) => {
                           </label>
                           {comp.profile && (
                             <img
-                 src={
-  comp.profile instanceof File
-    ? URL.createObjectURL(comp.profile)
-    : (typeof comp.profile === 'string' && comp.profile.startsWith('data:'))
-      ? comp.profile
-      : `data:image/jpeg;base64,${comp.profile}`
-}
-
+                              src={
+                                comp.profile instanceof File
+                                  ? URL.createObjectURL(comp.profile)
+                                  : typeof comp.profile === "string" &&
+                                    comp.profile.startsWith("data:")
+                                  ? comp.profile
+                                  : `data:image/jpeg;base64,${comp.profile}`
+                              }
                               alt="Profile Preview"
                               className="mt-2 w-16 h-16 rounded-full object-cover mx-auto"
                             />

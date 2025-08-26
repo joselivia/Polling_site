@@ -10,7 +10,7 @@ interface Candidate {
   name: string;
 }
 
-interface PollData {
+ interface PollData {
   title: string;
   results: Candidate[];
   voting_expires_at: string;
@@ -31,7 +31,6 @@ const VoteInterface = ({ id }: { id: number }) => {
   const [mounted, setMounted] = useState(false);
   const [localAllowMultipleVotes, setLocalAllowMultipleVotes] = useState<boolean | null>(null);
 const router=useRouter();
-  // Previous useEffect hooks remain unchanged
   useEffect(() => {
     const adminStatus = localStorage.getItem("isAdmin");
     setIsAdmin(adminStatus === "true");
@@ -182,8 +181,6 @@ const router=useRouter();
   if (!data) return <p className="text-center p-4">Loading poll data...</p>;
 
   const isVotingClosed = countdown === "Voting closed";
-
-  // Render only "Voting closed" when voting has expired
   if (isVotingClosed) {
     return (
       <div className="max-w-lg mx-auto p-4">

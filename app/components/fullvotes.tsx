@@ -26,6 +26,7 @@ import {
   Printer,
   UserCircle2,
   ListChecks,
+  Clock10Icon,
 } from "lucide-react";
 import useSWR from "swr";
 
@@ -41,7 +42,7 @@ export interface Candidate {
 export interface PollData {
   id: number;
   title: string;
-  presidential:string;
+  presidential: string;
   category?: string;
   region: string;
   county?: string;
@@ -51,6 +52,7 @@ export interface PollData {
   spoiled_votes?: number;
   results: Candidate[];
   created_at: Date | string;
+  voting_expires_at: string;
 }
 
 const COLORS = [
@@ -68,24 +70,50 @@ const COLORS = [
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const FullPollDetails = ({ id }: { id?: number }) => {
+  
   const { data, error, isLoading } = useSWR<PollData>(
     id ? `${baseURL}/api/aspirant/${id}` : null,
     fetcher,
     { refreshInterval: 1000 }
   );
- const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [countdown, setCountdown] = useState<string>("");
   useEffect(() => {
     const adminStatus = localStorage.getItem("isAdmin");
     setIsAdmin(adminStatus === "true");
     setMounted(true);
   }, []);
+
+    useEffect(() => {
+      if (!data?.voting_expires_at) return;
+  
+      const interval = setInterval(() => {
+        const now = new Date();
+        const expires = new Date(data.voting_expires_at);
+        const diff = expires.getTime() - now.getTime();
+  
+        if (diff <= 0) {
+          setCountdown("Voting closed");
+          clearInterval(interval);
+        } else {
+          const hours = Math.floor(diff / (1000 * 60 * 60));
+          const minutes = Math.floor((diff / (1000 * 60)) % 60);
+          const seconds = Math.floor((diff / 1000) % 60);
+          setCountdown(`${hours}h ${minutes}m ${seconds}s`);
+        }
+      }, 1000);
+  
+      return () => clearInterval(interval);
+    }, [data?.voting_expires_at]);
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <div className="flex flex-col items-center p-8 bg-white rounded-xl shadow-lg">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-          <p className="text-lg text-gray-700 font-medium">Loading poll details...</p>
+          <p className="text-lg text-gray-700 font-medium">
+            Loading poll details...
+          </p>
         </div>
       </div>
     );
@@ -97,7 +125,9 @@ const FullPollDetails = ({ id }: { id?: number }) => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <div className="flex flex-col items-center p-8 bg-white rounded-xl shadow-lg text-red-600">
           <X className="w-12 h-12 mb-4" />
-          <p className="text-lg font-medium">Failed to load poll data. Please try again later.</p>
+          <p className="text-lg font-medium">
+            Failed to load poll data. Please try again later.
+          </p>
         </div>
       </div>
     );
@@ -108,7 +138,9 @@ const FullPollDetails = ({ id }: { id?: number }) => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <div className="flex flex-col items-center p-8 bg-white rounded-xl shadow-lg text-gray-600">
           <Info className="w-12 h-12 mb-4" />
-          <p className="text-lg font-medium">Poll data is unavailable. Please check the ID or try again later.</p>
+          <p className="text-lg font-medium">
+            Poll data is unavailable. Please check the ID or try again later.
+          </p>
         </div>
       </div>
     );
@@ -136,17 +168,26 @@ const FullPollDetails = ({ id }: { id?: number }) => {
       <div className="max-w-8xl mx-auto bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-gray-200">
         {/* Header Section */}
         <div className="text-center mb-8 pb-4 border-b border-gray-200">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-3 flex items-center justify-center">
+      <p className="flex items-center justify-center text-red-600">
+            <Clock10Icon className="mr-3 " />
+            Count Down {countdown || "Not set"}
+          </p>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 flex items-center justify-center">
             <BarChart2 className="mr-3 text-blue-600 w-8 h-8 sm:w-10 sm:h-10" />
-            {data.title || "Poll Details"}
+            {data.title || " Poll Details"}
           </h1>
-            <p className="text-gray-600 text-base sm:text-lg font-medium mb-1 flex items-center justify-center">
+    
+          <p className="text-gray-600 text-base sm:text-lg font-medium mb-1 flex items-center justify-center">
             <Info className="w-4 h-4 mr-2 text-gray-500" />
-            Presidential Executive: <span className="font-semibold ml-1">{data.presidential || "N/A"}</span>
+            Presidential Executive:
+            <span className="font-semibold ml-1">
+              {data.presidential || "N/A"}
+            </span>
           </p>
           <p className="text-gray-600 text-base sm:text-lg font-medium mb-1 flex items-center justify-center">
             <Info className="w-4 h-4 mr-2 text-gray-500" />
-            Category: <span className="font-semibold ml-1">{data.category || "N/A"}</span>
+            Category:{" "}
+            <span className="font-semibold ml-1">{data.category || "N/A"}</span>
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mt-2">
             <p className="text-gray-600 text-sm sm:text-base flex items-center justify-center">
@@ -159,7 +200,9 @@ const FullPollDetails = ({ id }: { id?: number }) => {
             </p>
             <p className="text-gray-600 text-sm sm:text-base flex items-center justify-center">
               <Building2 className="w-4 h-4 mr-1 text-gray-500" /> Constituency:
-              <span className="font-semibold ml-1">{data.constituency || "N/A"}</span>
+              <span className="font-semibold ml-1">
+                {data.constituency || "N/A"}
+              </span>
             </p>
             <p className="text-gray-600 text-sm sm:text-base flex items-center justify-center">
               <Building2 className="w-4 h-4 mr-1 text-gray-500" /> Ward:
@@ -168,11 +211,13 @@ const FullPollDetails = ({ id }: { id?: number }) => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
             <p className="text-gray-700 text-base sm:text-lg font-semibold flex items-center justify-center">
-              <Users className="w-5 h-5 mr-2 text-blue-600" /> Registered Voters:
+              <Users className="w-5 h-5 mr-2 text-blue-600" /> Registered
+              Voters:
               <span className="ml-1">{data.totalVotes.toLocaleString()}</span>
             </p>
             <p className="text-gray-700 text-base sm:text-lg font-semibold flex items-center justify-center">
-              <ListChecks className="w-5 h-5 mr-2 text-green-600" /> Total Valid Votes:
+              <ListChecks className="w-5 h-5 mr-2 text-green-600" /> Total Valid
+              Votes:
               <span className="ml-1">{totalValidVotes.toLocaleString()}</span>
             </p>
             <p className="text-gray-700 text-base sm:text-lg font-semibold flex items-center justify-center">
@@ -211,7 +256,9 @@ const FullPollDetails = ({ id }: { id?: number }) => {
                       cy="50%"
                       outerRadius={100}
                       fill="#8884d8"
-                      label={({ name, percentage }) => `${name} (${percentage.toFixed(1)}%)`}
+                      label={({ name, percentage }) =>
+                        `${name} (${percentage.toFixed(1)}%)`
+                      }
                       labelLine={false}
                     >
                       {chartData.map((_, index) => (
@@ -249,12 +296,27 @@ const FullPollDetails = ({ id }: { id?: number }) => {
                     layout="vertical"
                     margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                   >
-                    <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} />
-                    <XAxis type="number" tickFormatter={(v) => v.toLocaleString()} />
-                    <Tooltip formatter={(value: number) => `${value.toLocaleString()} votes`} />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <XAxis
+                      type="number"
+                      tickFormatter={(v) => v.toLocaleString()}
+                    />
+                    <Tooltip
+                      formatter={(value: number) =>
+                        `${value.toLocaleString()} votes`
+                      }
+                    />
                     <Bar dataKey="votes" barSize={30} radius={[5, 5, 0, 0]}>
                       {chartData.map((entry, index) => (
-                        <Cell key={`bar-cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell
+                          key={`bar-cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
                       ))}
                     </Bar>
                   </BarChart>
@@ -264,23 +326,35 @@ const FullPollDetails = ({ id }: { id?: number }) => {
 
             {/* Results Table */}
             <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center flex items-center justify-center">
-              <ListChecks className="w-6 h-6 mr-2 text-blue-600" /> Candidate Performance
+              <ListChecks className="w-6 h-6 mr-2 text-blue-600" /> Candidate
+              Performance
             </h3>
             <div className="overflow-x-auto rounded-xl shadow-md border border-gray-200 mb-8">
               <table className="min-w-full bg-white text-sm">
                 <thead className="bg-gray-100 border-b border-gray-200">
                   <tr>
-                    <th className="py-3 px-4 font-semibold text-left">Profile</th>
-                    <th className="py-3 px-4 font-semibold text-left">Candidate</th>
+                    <th className="py-3 px-4 font-semibold text-left">
+                      Profile
+                    </th>
+                    <th className="py-3 px-4 font-semibold text-left">
+                      Candidate
+                    </th>
                     <th className="py-3 px-4 font-semibold text-left">Party</th>
-                    <th className="py-3 px-4 font-semibold text-left">Percentage</th>
-                    <th className="py-3 px-4 font-semibold text-left">Progress</th>
+                    <th className="py-3 px-4 font-semibold text-left">
+                      Percentage
+                    </th>
+                    <th className="py-3 px-4 font-semibold text-left">
+                      Progress
+                    </th>
                     <th className="py-3 px-4 font-semibold text-left">Votes</th>
                   </tr>
                 </thead>
                 <tbody>
                   {chartData.map((c, index) => (
-                    <tr key={c.id} className="border-b hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={c.id}
+                      className="border-b hover:bg-gray-50 transition-colors"
+                    >
                       <td className="py-3 px-4">
                         {c.profile ? (
                           <img
@@ -292,9 +366,15 @@ const FullPollDetails = ({ id }: { id?: number }) => {
                           <UserCircle2 size={36} className="text-gray-400" />
                         )}
                       </td>
-                      <td className="py-3 px-4 font-medium text-gray-900">{c.name}</td>
-                      <td className="py-3 px-4 text-gray-700">{c.party || "Independent"}</td>
-                      <td className="py-3 px-4 text-gray-700">{c.percentage.toFixed(2)}%</td>
+                      <td className="py-3 px-4 font-medium text-gray-900">
+                        {c.name}
+                      </td>
+                      <td className="py-3 px-4 text-gray-700">
+                        {c.party || "Independent"}
+                      </td>
+                      <td className="py-3 px-4 text-gray-700">
+                        {c.percentage.toFixed(2)}%
+                      </td>
                       <td className="py-3 px-4">
                         <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
                           <div
@@ -306,7 +386,9 @@ const FullPollDetails = ({ id }: { id?: number }) => {
                           />
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-gray-700">{c.votes.toLocaleString()}</td>
+                      <td className="py-3 px-4 text-gray-700">
+                        {c.votes.toLocaleString()}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -322,13 +404,15 @@ const FullPollDetails = ({ id }: { id?: number }) => {
             <span className="font-semibold ml-1">
               {new Date(data.created_at).toLocaleString("en-KE")}
             </span>
-          </p> {mounted && isAdmin && (
-          <button
-            onClick={() => window.print()}
-            className="flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105"
-          >
-            <Printer className="w-5 h-5 mr-2" /> Print Report
-          </button>)}
+          </p>{" "}
+          {mounted && isAdmin && (
+            <button
+              onClick={() => window.print()}
+              className="flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-md hover:bg-blue-700 transition-all duration-300 transform hover:scale-105"
+            >
+              <Printer className="w-5 h-5 mr-2" /> Print Report
+            </button>
+          )}
         </div>
       </div>
     </div>

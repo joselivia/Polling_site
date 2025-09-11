@@ -256,8 +256,8 @@ const FullPollDetails = ({ id }: { id?: number }) => {
                       cy="50%"
                       outerRadius={100}
                       fill="#8884d8"
-                      label={({ name, percentage }) =>
-                        `${name} (${percentage.toFixed(1)}%)`
+                      label={({  percentage }) =>
+                        `(${percentage.toFixed(1)}%)`
                       }
                       labelLine={false}
                     >
@@ -273,12 +273,6 @@ const FullPollDetails = ({ id }: { id?: number }) => {
                         `${value.toLocaleString()} votes`,
                         props.payload.name,
                       ]}
-                    />
-                    <Legend
-                      layout="vertical"
-                      align="right"
-                      verticalAlign="middle"
-                      wrapperStyle={{ paddingLeft: "20px" }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -359,7 +353,7 @@ const FullPollDetails = ({ id }: { id?: number }) => {
                         {c.profile ? (
                           <img
                             src={c.profile}
-                            alt={c.name}
+                            alt='Profile'
                             className="h-10 w-10 rounded-full border object-cover"
                           />
                         ) : (

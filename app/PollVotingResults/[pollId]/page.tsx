@@ -134,7 +134,6 @@ const PollVotingResultsPage = () => {
   }
 
   const { poll, aggregatedResponses, demographics } = results;
-
   const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }: any) => {
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);

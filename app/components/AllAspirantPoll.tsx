@@ -34,6 +34,7 @@ interface PollData {
   constituency?: string;
   ward?: string;
   totalVotes: number;
+  voting_expires_at: string;
   spoiled_votes?: number;
   results?: Candidate[];
   competitors?: Candidate[];
@@ -57,6 +58,7 @@ const AllApirantPollPage = () => {
         throw new Error(errorData.message || "Failed to fetch polls.");
       }
       const data: PollData[] = await response.json();
+      console.log(data);
       setPolls(data);
     } catch (err: any) {
       setError(
@@ -91,6 +93,13 @@ const AllApirantPollPage = () => {
   const handleEditSubmit = async (id: number) => {
     if (!editingPoll) return;
     setSubmitting(true);
+    let expiryValue=editingPoll.voting_expires_at;
+      if (/^\d+$/.test(expiryValue)) {
+    const hours = parseInt(expiryValue, 10);
+    const expiryDate = new Date();
+    expiryDate.setHours(expiryDate.getHours() + hours);
+    expiryValue = expiryDate.toISOString(); // 
+  }
     const formData = new FormData();
     formData.append("title", editingPoll.title);
     formData.append("presidential", editingPoll.presidential || "");
@@ -99,6 +108,7 @@ const AllApirantPollPage = () => {
     formData.append("county", editingPoll.county || "");
     formData.append("constituency", editingPoll.constituency || "");
     formData.append("ward", editingPoll.ward || "");
+    formData.append("voting_expires_at", expiryValue || "");
     editingPoll.questions?.forEach((q, i) => {
       formData.append(`questions[${i}][id]`, q.id ? String(q.id) : "");
       formData.append(`questions[${i}][question_text]`, q.question_text || "");
@@ -127,6 +137,7 @@ const AllApirantPollPage = () => {
       if (!res.ok) throw new Error("Failed to update poll");
 
       const updated = await res.json();
+      console.log({voting_expires_at:updated.poll.voting_expires_at});
       setPolls((prev) =>
         prev.map((p) => (p.id === updated.poll.id ? updated.poll : p))
       );
@@ -478,6 +489,24 @@ const AllApirantPollPage = () => {
                         placeholder="e.g., Woodley"
                       />
                     </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                  <h2>Voting Expiry hours</h2>
+                  <div>
+                    <input
+                      id="expiry"
+                      type="number"
+                      value={editingPoll.voting_expires_at || ""}
+                      onChange={(e) =>
+                        setEditingPoll({
+                          ...editingPoll,
+                          voting_expires_at: e.target.value,
+                        })
+                      }
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      placeholder="e.g., 24"
+                    />
                   </div>
                 </div>
                 {/* Questions Section */}

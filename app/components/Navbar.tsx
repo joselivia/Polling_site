@@ -17,7 +17,7 @@ export default function Navbar() {
   const closeSidebar = () => setSidebarOpen(false);
 
   return (
-    <nav className="bg-white dark:bg-gray-900 border-b sticky top-0 z-50">
+    <nav className="bg-white  border-b sticky top-0 z-50">
       <div className="md:hidden flex justify-between items-center px-4 py-2">
         <Image
           src="/logo.jpg"
@@ -29,7 +29,7 @@ export default function Navbar() {
           onClick={toggleSidebar}
           className="text-3xl p-2 text-gray-900 dark:text-white focus:outline-none"
         >
-          {sidebarOpen ? <FiX /> : <FiMenu />}
+          {sidebarOpen ? <FiX color="black"/> : <FiMenu color="black"/>}
         </button>
       </div>
 
@@ -46,7 +46,7 @@ export default function Navbar() {
             <li key={item.label}>
               <Link
                 href={item.href}
-                className="text-gray-900 dark:text-white hover:text-blue-600"
+                className="font-bold hover:text-blue-600"
               >
                 {item.label}
               </Link>
@@ -57,7 +57,7 @@ export default function Navbar() {
 
       {/* Mobile Sidebar */}
       {sidebarOpen && (
-        <div className="md:hidden fixed top-16 right-0 w-3/4 h-full bg-gray-900 text-white p-6 shadow-lg z-50">
+        <div className="md:hidden fixed top-16 right-0 w-3/4 h-full text-gray-800 bg-white p-6 shadow-lg z-50">
           <ul className="space-y-6 text-lg">
             {navItems.map((item) => (
               <li key={item.label}>

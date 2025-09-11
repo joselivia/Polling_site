@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import AllPollsPage from "../components/AllPollsPage";
 import AllApirantPollPage from "../components/AllAspirantPoll";
 import { PlusCircle } from "lucide-react";
@@ -48,8 +48,7 @@ export default function HomePage() {
         <AllPollsPage />
       </div>
       <div>
-        {" "}
-        <h1 className="flex text-4xl justify-center">All polling votes</h1>{" "}
+        <h1 className="flex text-4xl justify-center">All polling votes</h1>
         <AllApirantPollPage />
       </div>
     </div>

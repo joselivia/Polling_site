@@ -11,6 +11,7 @@ export default function Navbar() {
   const navItems = [
     { label: "Home", href: "/Reports" },
     { label: "News", href: "/BlogPostForm/BlogList" },
+    { label: "Events", href: "/Event" },
   ];
 
   const toggleSidebar = () => setSidebarOpen((v) => !v);

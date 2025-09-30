@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { baseURL2 } from "@/config/baseUrl";
+import { useRouter } from "next/navigation";
 
 interface Event {
   id: number;
@@ -31,7 +32,7 @@ const [success,setSuccess] = useState<string | null>(null);
     registration_ends: "",
     image: "",
   });
-
+const router = useRouter();
   useEffect(() => {
     fetchEvents();
   }, []);
@@ -246,19 +247,23 @@ const handleSubmit = async (e: React.FormEvent) => {
             >
               <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold">{event.title}</h2>
-                <div className="space-x-2">
+                <div className="space-x-2 ">
                   <button
-                    className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                    className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 cursor-pointer"
                     onClick={() => handleEdit(event)}
                   >
                     Edit
                   </button>
                   <button
-                    className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                    className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 cursor-pointer"
                     onClick={() => handleDelete(event.id)}
                   >
                     Delete
                   </button>
+                  <button
+                    className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 cursor-pointer"
+                    onClick={() =>router.push("Event/RegisteredUsers")}
+                  >Registered: {event.registered_count}</button>
                 </div>
               </div>
               <p className="mt-2 text-gray-700">{event.description}</p>

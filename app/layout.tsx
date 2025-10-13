@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "./components/Navbar";
+
 import Footerpage from "./components/Footer";
+
+import LayoutWithConditionalNav from "./components/LayoutWithConditionalNav";
 
 
 export const metadata: Metadata = {
@@ -16,8 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body><Navbar />
-        {children}
+      <body><LayoutWithConditionalNav>{children}</LayoutWithConditionalNav>
         <Footerpage />
       </body>
     </html>

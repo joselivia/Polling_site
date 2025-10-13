@@ -14,7 +14,7 @@ const ThankYouPage = () => {
           We've successfully recorded your responses. Your participation helps
           us gather valuable insights.
         </p>
-        <p className="mt-8 text-sm text-gray-500">Powered by Your Opinion</p>{" "}
+        <p className="mt-8 text-sm text-gray-500">Powered by Your Opinio"n</p>
         <h1 className="text-3xl font-extrabold text-gray-800 mb-4 leading-tight">Follow Us On</h1>
         <div className=" flex justify-center space-x-4">
           <a

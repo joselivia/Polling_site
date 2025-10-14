@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import Footerpage from "./components/Footer";
-
-import LayoutWithConditionalNav from "./components/LayoutWithConditionalNav";
-
+import Navbar from "./components/Navbar";
 
 export const metadata: Metadata = {
   title: "Admin | Politrack Africa",
@@ -18,7 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body><LayoutWithConditionalNav>{children}</LayoutWithConditionalNav>
+      <body> <Navbar />{children}
         <Footerpage />
       </body>
     </html>

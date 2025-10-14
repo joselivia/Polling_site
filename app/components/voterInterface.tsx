@@ -143,7 +143,7 @@ const router=useRouter();
       if (response.status === 200) {
         setMessage("Vote recorded successfully!");
         setSelectedCandidateId(null);
-         setTimeout(() => router.push('/Thankyou'), 1000); 
+         setTimeout(() => router.replace('/Thankyou'), 1000); 
         if (!data.allow_multiple_votes) {
           setMessage("You have already voted in this poll.");
         }
@@ -196,7 +196,7 @@ const router=useRouter();
     message === "You have already voted in this poll.";
 
   return (
-    <div className="max-w-lg mx-auto p-4">
+    <div className="max-w-lg mx-auto p-4 min-h-screen">
       <div className="flex justify-between">
         <h1 className="text-2xl font-bold text-center">{data.title || "Cast Your Vote"}</h1>
         {mounted && isAdmin && (

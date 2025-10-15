@@ -143,15 +143,14 @@ const router=useRouter();
       if (response.status === 200) {
         setMessage("Vote recorded successfully!");
         setSelectedCandidateId(null);
-         setTimeout(() => router.replace('/Thankyou'), 1000); 
-        if (!data.allow_multiple_votes) {
-          setMessage("You have already voted in this poll.");
+     if (!isAdmin) {
+          setTimeout(() => router.replace("/Thankyou"), 1000);
         }
-      }
+       }
     } catch (error: any) {
-      if (axios.isAxiosError(error) && error.response?.status === 403) {
-        setMessage("You have already voted in this poll.");
-      } else {
+    if (!isAdmin && axios.isAxiosError(error) && error.response?.status === 403) {
+      setMessage("You have already voted in this poll.");
+    } else {
         console.error("Error voting:", error);
         setMessage("Failed to record vote. Please try again.");
       }
@@ -197,7 +196,7 @@ const router=useRouter();
 
   return (
     <div className="max-w-lg mx-auto p-4 min-h-screen">
-      <div className="flex justify-between">
+      <div className="flex justify-center items-center space-x-2.5">
         <h1 className="text-2xl font-bold text-center">{data.title || "Cast Your Vote"}</h1>
         {mounted && isAdmin && (
           <div className="text-center mt-2">
@@ -208,8 +207,8 @@ const router=useRouter();
               } text-white hover:opacity-90`}
             >
               {data.allow_multiple_votes
-                ? "Disable Multiple Voting"
-                : "Enable Multiple Voting"}
+                ? "Disable Call Centre"
+                : "Enable Call Centre"}
             </button>
           </div>
         )}
